@@ -1,4 +1,23 @@
-CREATE DATABASE audit_document;
+CREATE DATABASE audit_interne;
+
+CREATE TABLE utilisateur (
+    id BIGSERIAL PRIMARY KEY,
+
+    username VARCHAR(100) NOT NULL UNIQUE,
+
+    email VARCHAR(255) NOT NULL UNIQUE,
+
+    password VARCHAR(255) NOT NULL,
+
+    role VARCHAR(30) NOT NULL,
+
+    actif BOOLEAN NOT NULL DEFAULT TRUE,
+
+    date_creation TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT chk_utilisateur_role
+        CHECK (role IN ('ADMIN', 'UTILISATEUR'))
+);
 
 CREATE TABLE structure (
     id BIGSERIAL PRIMARY KEY,

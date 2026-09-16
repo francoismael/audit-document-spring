@@ -1,4 +1,4 @@
-package com.audit.audit_document.infrastructure.repository;
+package com.audit.audit_document.infrastructure.adapter;
 
 import com.audit.audit_document.domain.entity.Personne;
 import com.audit.audit_document.domain.repository.PersonneRepository;

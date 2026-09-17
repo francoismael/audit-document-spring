@@ -82,6 +82,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         .antMatchers(HttpMethod.DELETE,"/api/declarations-independance/**").hasRole("ADMIN")
 
 
+
+        // PV ouverture
+        .antMatchers(HttpMethod.GET, "/api/reunions/**").hasAnyRole("ADMIN", "UTILISATEUR")
+        .antMatchers(HttpMethod.POST,"/api/reunions").hasAnyRole("ADMIN", "UTILISATEUR")
+        .antMatchers(HttpMethod.PUT,"/api/reunions/**").hasAnyRole("ADMIN", "UTILISATEUR")
+// Suppression : ADMIN uniquement
+        .antMatchers(HttpMethod.DELETE,"/api/reunions/**").hasRole("ADMIN")
+
+
             // =========================
             // AUTRES API
 

@@ -170,6 +170,54 @@ CREATE TABLE interview_question (
         UNIQUE (interview_id, numero)
 );
 
+CREATE TABLE tdr (
+    id SERIAL PRIMARY KEY,
+
+    mission_id BIGINT NOT NULL UNIQUE,
+
+    objet TEXT,
+
+    contexte TEXT,
+
+    competence TEXT,
+
+    perimetre TEXT,
+
+    periode_observation TEXT,
+
+    lieu VARCHAR(255),
+
+    methodologie_travail TEXT,
+
+    resultats_attendus TEXT,
+
+    livrables TEXT,
+
+    CONSTRAINT fk_tdr_mission
+        FOREIGN KEY (mission_id)
+        REFERENCES mission(id)
+        ON DELETE CASCADE
+);
+
+/* Objectif defini dans TDR */
+CREATE TABLE objectif (
+    id BIGSERIAL PRIMARY KEY,
+
+    tdr_id BIGINT NOT NULL,
+
+    numero VARCHAR(20) NOT NULL,
+
+    descriptions TEXT NOT NULL,
+
+    CONSTRAINT fk_objectif_tdr
+        FOREIGN KEY (tdr_id)
+        REFERENCES tdr(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT uq_objectif_numero
+        UNIQUE (tdr_id, numero)
+);
+
 INSERT INTO structure (nom, descriptions)
 VALUES
 ('Direction Générale des Finances', 'Structure chargée de la gestion financière'),

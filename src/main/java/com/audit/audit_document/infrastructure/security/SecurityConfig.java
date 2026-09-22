@@ -99,6 +99,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         .antMatchers(HttpMethod.DELETE,"/api/tdrs/**").hasRole("ADMIN")
 
 
+                // programme de travail
+        .antMatchers(HttpMethod.GET, "/api/programmes-travail/**").hasAnyRole("ADMIN", "UTILISATEUR")
+        .antMatchers(HttpMethod.POST,"/api/programmes-travail").hasAnyRole("ADMIN", "UTILISATEUR")
+        .antMatchers(HttpMethod.PUT,"/api/programmes-travail/**").hasAnyRole("ADMIN", "UTILISATEUR")
+// Suppression : ADMIN uniquement
+        .antMatchers(HttpMethod.DELETE,"/api/programmes-travail/**").hasRole("ADMIN")
+
+
             // =========================
             // AUTRES API
 

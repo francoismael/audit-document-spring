@@ -7,6 +7,7 @@ import com.audit.audit_document.infrastructure.jpa.ObjectifJpa;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class ObjectifRepositoryAdapter
@@ -21,6 +22,11 @@ public class ObjectifRepositoryAdapter
     @Override
     public Objectif save(Objectif objectif) {
         return repository.save(objectif);
+    }
+
+    @Override
+    public Optional<Objectif> findById(Long id) {
+        return repository.findById(id);
     }
 
     @Override

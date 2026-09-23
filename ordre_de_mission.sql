@@ -218,6 +218,174 @@ CREATE TABLE objectif (
         UNIQUE (tdr_id, numero)
 );
 
+/*
+   Une mission possède un seul programme de travail
+ */
+
+CREATE TABLE programme_travail (
+    id BIGSERIAL PRIMARY KEY,
+
+    mission_id BIGINT NOT NULL UNIQUE,
+
+    CONSTRAINT fk_programme_mission
+        FOREIGN KEY (mission_id)
+        REFERENCES mission(id)
+        ON DELETE CASCADE
+);
+
+
+/*
+    SEQUENCE POUR LES NUMEROS DE CONTROLE */
+
+CREATE SEQUENCE ligne_programme_controle_seq
+START WITH 1
+INCREMENT BY 1;
+
+
+/*  LIGNES DU PROGRAMME DE TRAVAIL
+*/
+
+CREATE TABLE ligne_programme (
+    id BIGSERIAL PRIMARY KEY,
+
+    programme_id BIGINT NOT NULL,
+
+    objectif_id BIGINT NOT NULL,
+
+    numero_controle VARCHAR(50) NOT NULL,
+
+    tache_operation TEXT,
+
+    faiblesse_a_confirmer TEXT,
+
+    responsable VARCHAR(255),
+
+    frequence VARCHAR(100),
+
+    type_controle VARCHAR(100),
+
+    domaine_cycle VARCHAR(255),
+
+    risque TEXT,
+
+    procedure_test TEXT,
+
+    echantillon_description TEXT,
+
+    technique_audit VARCHAR(255),
+
+    technique_echantillonnage VARCHAR(255),
+
+    CONSTRAINT fk_ligne_programme
+        FOREIGN KEY (programme_id)
+        REFERENCES programme_travail(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_ligne_objectif
+        FOREIGN KEY (objectif_id)
+        REFERENCES objectif(id)
+);
+
+
+
+
+/* séquence de fiche de test */
+CREATE SEQUENCE test_reference_seq
+START WITH 1
+INCREMENT BY 1;
+
+CREATE SEQUENCE echantillon_reference_seq
+START WITH 1
+INCREMENT BY 1;
+
+
+CREATE TABLE test (
+    id BIGSERIAL PRIMARY KEY,
+
+    ligne_programme_id BIGINT NOT NULL,
+
+    reference VARCHAR(100) NOT NULL,
+
+    date_test DATE,
+
+    procedure_realisee TEXT,
+
+    resume_anomalies TEXT,
+
+    resultat_test VARCHAR(50),
+
+    risque_maitrise BOOLEAN,
+
+    recommandations TEXT,
+
+    commentaires_chef_mission TEXT,
+
+    commentaires_superviseur TEXT,
+
+    auditeur_mission_personne_id BIGINT,
+
+    date_audit DATE,
+
+    chef_mission_mission_personne_id BIGINT,
+
+    date_revue_chef_mission DATE,
+
+    superviseur_mission_personne_id BIGINT,
+
+    date_revue_superviseur DATE,
+
+    CONSTRAINT fk_test_ligne_programme
+        FOREIGN KEY (ligne_programme_id)
+        REFERENCES ligne_programme(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_test_auditeur
+        FOREIGN KEY (auditeur_mission_personne_id)
+        REFERENCES mission_personne(id),
+
+    CONSTRAINT fk_test_chef_mission
+        FOREIGN KEY (chef_mission_mission_personne_id)
+        REFERENCES mission_personne(id),
+
+    CONSTRAINT fk_test_superviseur
+        FOREIGN KEY (superviseur_mission_personne_id)
+        REFERENCES mission_personne(id),
+
+    CONSTRAINT chk_resultat_test
+        CHECK (
+            resultat_test IS NULL
+            OR resultat_test IN (
+                'EFFECTIF',
+                'INEFFECTIF',
+                'PAS_ECHANTILLON',
+                'NON_IMPLETE'
+            )
+        )
+);
+
+
+CREATE TABLE echantillon (
+    id BIGSERIAL PRIMARY KEY,
+
+    test_id BIGINT NOT NULL,
+
+    numero INTEGER NOT NULL,
+
+    reference VARCHAR(255),
+
+    anomalie_detectee BOOLEAN NOT NULL DEFAULT FALSE,
+
+    observation TEXT,
+
+    CONSTRAINT fk_echantillon_test
+        FOREIGN KEY (test_id)
+        REFERENCES test(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT uq_echantillon_numero
+        UNIQUE (test_id, numero)
+);
+
 INSERT INTO structure (nom, descriptions)
 VALUES
 ('Direction Générale des Finances', 'Structure chargée de la gestion financière'),

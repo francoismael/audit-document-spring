@@ -107,6 +107,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         .antMatchers(HttpMethod.DELETE,"/api/programmes-travail/**").hasRole("ADMIN")
 
 
+        // TESTE
+        .antMatchers(HttpMethod.GET, "/api/tests/**").hasAnyRole("ADMIN", "UTILISATEUR")
+        .antMatchers(HttpMethod.POST,"/api/tests").hasAnyRole("ADMIN", "UTILISATEUR")
+        .antMatchers(HttpMethod.PUT,"/api/tests/**").hasAnyRole("ADMIN", "UTILISATEUR")
+// Suppression : ADMIN uniquement
+        .antMatchers(HttpMethod.DELETE,"/api/tests/**").hasRole("ADMIN")
+
+
             // =========================
             // AUTRES API
 

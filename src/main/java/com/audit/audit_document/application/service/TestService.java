@@ -57,8 +57,9 @@ public class TestService implements
         this.missionPersonneRepository = missionPersonneRepository;
     }
 
+    // ============================================================
     // CREATE
-
+    // ============================================================
 
     @Override
     public TestResponse create(
@@ -76,15 +77,29 @@ public class TestService implements
             );
         }
 
+        /*
+         * Récupération de la ligne du programme.
+         */
         LigneProgramme ligneProgramme =
                 ligneProgrammeRepository
-                        .findById(request.getLigneProgrammeId())
+                        .findById(
+                                request.getLigneProgrammeId()
+                        )
                         .orElseThrow(() ->
                                 new IllegalArgumentException(
                                         "LigneProgramme introuvable avec l'id : "
                                                 + request.getLigneProgrammeId()
                                 )
                         );
+
+        /*
+         * Déterminer automatiquement la mission
+         * à laquelle appartient la ligne du programme.
+         */
+        Long missionId =
+                obtenirMissionId(
+                        ligneProgramme
+                );
 
         Test test = new Test();
 
@@ -110,22 +125,33 @@ public class TestService implements
 
         /*
          * Personnes du contrôle qualité.
+         *
+         * Le backend vérifie maintenant :
+         * - existence de la MissionPersonne
+         * - appartenance à la mission
+         * - rôle correct
          */
         test.setAuditeur(
                 trouverMissionPersonne(
-                        request.getAuditeurMissionPersonneId()
+                        request.getAuditeurMissionPersonneId(),
+                        missionId,
+                        "AUDITEUR"
                 )
         );
 
         test.setChefMission(
                 trouverMissionPersonne(
-                        request.getChefMissionMissionPersonneId()
+                        request.getChefMissionMissionPersonneId(),
+                        missionId,
+                        "CHEF_MISSION"
                 )
         );
 
         test.setSuperviseur(
                 trouverMissionPersonne(
-                        request.getSuperviseurMissionPersonneId()
+                        request.getSuperviseurMissionPersonneId(),
+                        missionId,
+                        "SUPERVISEUR"
                 )
         );
 
@@ -153,8 +179,9 @@ public class TestService implements
         return convertirEnResponse(resultat);
     }
 
+    // ============================================================
     // GET BY ID
-
+    // ============================================================
 
     @Override
     @Transactional(readOnly = true)
@@ -173,8 +200,9 @@ public class TestService implements
         return convertirEnResponse(test);
     }
 
+    // ============================================================
     // GET ALL
-
+    // ============================================================
 
     @Override
     @Transactional(readOnly = true)
@@ -196,9 +224,9 @@ public class TestService implements
         return responses;
     }
 
-
+    // ============================================================
     // GET BY LIGNE PROGRAMME
-
+    // ============================================================
 
     @Override
     @Transactional(readOnly = true)
@@ -235,8 +263,9 @@ public class TestService implements
         return responses;
     }
 
+    // ============================================================
     // UPDATE
-
+    // ============================================================
 
     @Override
     public TestResponse update(
@@ -265,6 +294,9 @@ public class TestService implements
             );
         }
 
+        /*
+         * Récupération de la nouvelle ligne du programme.
+         */
         LigneProgramme ligneProgramme =
                 ligneProgrammeRepository
                         .findById(
@@ -277,7 +309,19 @@ public class TestService implements
                                 )
                         );
 
+        /*
+         * Déterminer automatiquement la mission
+         * correspondant à cette ligne.
+         */
+        Long missionId =
+                obtenirMissionId(
+                        ligneProgramme
+                );
 
+        /*
+         * On peut modifier la ligne du programme,
+         * mais la référence FTxxx reste inchangée.
+         */
         test.setLigneProgramme(
                 ligneProgramme
         );
@@ -292,22 +336,32 @@ public class TestService implements
 
         /*
          * Mise à jour des personnes.
+         *
+         * Le backend vérifie :
+         * - la mission
+         * - le rôle
          */
         test.setAuditeur(
                 trouverMissionPersonne(
-                        request.getAuditeurMissionPersonneId()
+                        request.getAuditeurMissionPersonneId(),
+                        missionId,
+                        "AUDITEUR"
                 )
         );
 
         test.setChefMission(
                 trouverMissionPersonne(
-                        request.getChefMissionMissionPersonneId()
+                        request.getChefMissionMissionPersonneId(),
+                        missionId,
+                        "CHEF_MISSION"
                 )
         );
 
         test.setSuperviseur(
                 trouverMissionPersonne(
-                        request.getSuperviseurMissionPersonneId()
+                        request.getSuperviseurMissionPersonneId(),
+                        missionId,
+                        "SUPERVISEUR"
                 )
         );
 
@@ -325,8 +379,9 @@ public class TestService implements
         return convertirEnResponse(resultat);
     }
 
+    // ============================================================
     // DELETE
-
+    // ============================================================
 
     @Override
     public void delete(Long id) {
@@ -346,9 +401,9 @@ public class TestService implements
         );
     }
 
-
-    // GET DATA TEST
-
+    // ============================================================
+    // REMPLIR LES DONNÉES DU TEST
+    // ============================================================
 
     private void remplirDonneesTest(
             Test test,
@@ -399,12 +454,65 @@ public class TestService implements
         );
     }
 
+    // ============================================================
+    // OBTENIR LA MISSION DE LA LIGNE DU PROGRAMME
+    // ============================================================
 
-    // GET DATA MISSION PERSONNE 
+    private Long obtenirMissionId(
+            LigneProgramme ligneProgramme) {
 
+        if (ligneProgramme == null) {
+            throw new IllegalArgumentException(
+                    "La ligne du programme est obligatoire."
+            );
+        }
+
+        if (ligneProgramme.getObjectif() == null) {
+            throw new IllegalArgumentException(
+                    "La ligne du programme ne possède aucun objectif."
+            );
+        }
+
+        if (ligneProgramme.getObjectif().getTdr() == null) {
+            throw new IllegalArgumentException(
+                    "L'objectif ne possède aucun TDR."
+            );
+        }
+
+        if (ligneProgramme.getObjectif()
+                .getTdr()
+                .getMission() == null) {
+
+            throw new IllegalArgumentException(
+                    "Le TDR ne possède aucune mission."
+            );
+        }
+
+        if (ligneProgramme.getObjectif()
+                .getTdr()
+                .getMission()
+                .getId() == null) {
+
+            throw new IllegalArgumentException(
+                    "La mission ne possède aucun ID."
+            );
+        }
+
+        return ligneProgramme
+                .getObjectif()
+                .getTdr()
+                .getMission()
+                .getId();
+    }
+
+    // ============================================================
+    // RÉCUPÉRER UNE MISSION PERSONNE
+    // ============================================================
 
     private MissionPersonne trouverMissionPersonne(
-            Long id) {
+            Long id,
+            Long missionId,
+            String role) {
 
         /*
          * Le champ est facultatif.
@@ -413,20 +521,58 @@ public class TestService implements
             return null;
         }
 
-        return missionPersonneRepository
-                .findById(id)
-                .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "MissionPersonne introuvable avec l'id : "
-                                        + id
-                        )
-                );
+        /*
+         * Vérifier que la MissionPersonne existe.
+         */
+        MissionPersonne missionPersonne =
+                missionPersonneRepository
+                        .findById(id)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "MissionPersonne introuvable avec l'id : "
+                                                + id
+                                )
+                        );
+
+        /*
+         * Vérifier que la MissionPersonne appartient
+         * bien à la mission du Test.
+         */
+        if (missionPersonne.getMission() == null
+                || missionPersonne.getMission().getId() == null
+                || !missionPersonne.getMission()
+                        .getId()
+                        .equals(missionId)) {
+
+            throw new IllegalArgumentException(
+                    "La MissionPersonne "
+                            + id
+                            + " n'appartient pas à la mission "
+                            + missionId
+            );
+        }
+
+        /*
+         * Vérifier le rôle.
+         */
+        if (missionPersonne.getRoles() == null
+                || !missionPersonne.getRoles()
+                        .equalsIgnoreCase(role)) {
+
+            throw new IllegalArgumentException(
+                    "La MissionPersonne "
+                            + id
+                            + " n'a pas le rôle "
+                            + role
+            );
+        }
+
+        return missionPersonne;
     }
 
-
-    
-    // ADD NEW ECHANTILLON
-
+    // ============================================================
+    // AJOUTER LES NOUVEAUX ÉCHANTILLONS
+    // ============================================================
 
     private void ajouterNouveauxEchantillons(
             Test test,
@@ -437,7 +583,7 @@ public class TestService implements
         }
 
         /*
-         * Numéro interne de l'échantillon :
+         * Numéro interne :
          * 1, 2, 3...
          */
         Integer prochainNumero =
@@ -450,7 +596,9 @@ public class TestService implements
             Echantillon echantillon =
                     new Echantillon();
 
-            echantillon.setTest(test);
+            echantillon.setTest(
+                    test
+            );
 
             /*
              * Numéro automatique.
@@ -485,9 +633,9 @@ public class TestService implements
         }
     }
 
-
-    //MAJ ÉCHANTILLONS
-
+    // ============================================================
+    // METTRE À JOUR LES ÉCHANTILLONS
+    // ============================================================
 
     private void mettreAJourEchantillons(
             Test test,
@@ -504,7 +652,8 @@ public class TestService implements
                             test.getEchantillons()
                     );
 
-            for (Echantillon echantillon : anciens) {
+            for (Echantillon echantillon :
+                    anciens) {
 
                 test.removeEchantillon(
                         echantillon
@@ -515,8 +664,7 @@ public class TestService implements
         }
 
         /*
-         * Indexer les anciens échantillons
-         * par leur ID.
+         * Indexer les anciens échantillons par leur ID.
          */
         Map<Long, Echantillon> anciensParId =
                 new HashMap<>();
@@ -566,8 +714,8 @@ public class TestService implements
                         );
 
                 /*
-                 * Vérifier que l'échantillon appartient bien
-                 * au Test courant.
+                 * Vérifier que l'échantillon appartient
+                 * bien au Test courant.
                  */
                 if (ancien == null) {
 
@@ -584,13 +732,7 @@ public class TestService implements
                 );
 
                 /*
-                 * IMPORTANT :
-                 *
-                 * On ne modifie ni :
-                 * - numero
-                 * - reference
-                 *
-                 * Ils restent stables.
+                 * La référence et le numéro restent stables.
                  */
                 ancien.setAnomalieDetectee(
                         request.getAnomalieDetectee() != null
@@ -613,7 +755,9 @@ public class TestService implements
                 Echantillon nouveau =
                         new Echantillon();
 
-                nouveau.setTest(test);
+                nouveau.setTest(
+                        test
+                );
 
                 /*
                  * Nouveau numéro automatique.
@@ -628,7 +772,8 @@ public class TestService implements
                  * Nouvelle référence automatique.
                  */
                 nouveau.setReference(
-                        echantillonRepository.getNextReference()
+                        echantillonRepository
+                                .getNextReference()
                 );
 
                 nouveau.setAnomalieDetectee(
@@ -652,8 +797,8 @@ public class TestService implements
          * SUPPRESSION DES ANCIENS ÉCHANTILLONS
          * ========================================================
          *
-         * Si un ancien échantillon n'est plus envoyé par le
-         * frontend, il est supprimé.
+         * Si un ancien échantillon n'est plus présent
+         * dans la requête, il est supprimé.
          */
         List<Echantillon> anciens =
                 new ArrayList<>(
@@ -668,7 +813,6 @@ public class TestService implements
 
             /*
              * Les nouveaux échantillons ont id = null.
-             * Ils ne doivent donc pas être supprimés.
              */
             if (echantillonId != null
                     && !idsRecus.contains(echantillonId)) {

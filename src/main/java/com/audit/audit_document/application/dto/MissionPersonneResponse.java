@@ -8,8 +8,18 @@ public class MissionPersonneResponse {
     private String fonction;
     private String services;
     private String roles;
+    private Long missionPersonneId;
 
     public MissionPersonneResponse() {
+    }
+
+        
+    public Long getMissionPersonneId() {
+        return missionPersonneId;
+    }
+
+    public void setMissionPersonneId(Long missionPersonneId) {
+        this.missionPersonneId = missionPersonneId;
     }
 
     public Long getPersonneId() {

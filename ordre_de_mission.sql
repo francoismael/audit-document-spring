@@ -386,6 +386,85 @@ CREATE TABLE echantillon (
         UNIQUE (test_id, numero)
 );
 
+CREATE TABLE constat (
+    id BIGSERIAL PRIMARY KEY,
+
+    test_id BIGINT NOT NULL,
+
+    reference VARCHAR(100) NOT NULL,
+
+    descriptions TEXT NOT NULL,
+
+    niveau_risque VARCHAR(50),
+
+    direction_service_concerne VARCHAR(255),
+
+    CONSTRAINT fk_constat_test
+        FOREIGN KEY (test_id)
+        REFERENCES test(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE cause (
+    id BIGSERIAL PRIMARY KEY,
+
+    constat_id BIGINT NOT NULL,
+
+    descriptions TEXT NOT NULL,
+
+    CONSTRAINT fk_cause_constat
+        FOREIGN KEY (constat_id)
+        REFERENCES constat(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE risque (
+    id BIGSERIAL PRIMARY KEY,
+
+    constat_id BIGINT NOT NULL,
+
+    descriptions TEXT NOT NULL,
+
+    niveau VARCHAR(50),
+
+    CONSTRAINT fk_risque_constat
+        FOREIGN KEY (constat_id)
+        REFERENCES constat(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE consequence (
+    id BIGSERIAL PRIMARY KEY,
+
+    constat_id BIGINT NOT NULL,
+
+    descriptions TEXT NOT NULL,
+
+    CONSTRAINT fk_consequence_constat
+        FOREIGN KEY (constat_id)
+        REFERENCES constat(id)
+        ON DELETE CASCADE
+);
+
+CREATE SEQUENCE constat_reference_seq
+START WITH 1
+INCREMENT BY 1;
+
+CREATE TABLE recommandation (
+    id BIGSERIAL PRIMARY KEY,
+
+    constat_id BIGINT NOT NULL,
+
+    description TEXT NOT NULL,
+
+    statut VARCHAR(50),
+
+    CONSTRAINT fk_recommandation_constat
+        FOREIGN KEY (constat_id)
+        REFERENCES constat(id)
+        ON DELETE CASCADE
+);
+
 INSERT INTO structure (nom, descriptions)
 VALUES
 ('Direction Générale des Finances', 'Structure chargée de la gestion financière'),

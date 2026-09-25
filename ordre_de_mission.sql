@@ -457,11 +457,31 @@ CREATE TABLE recommandation (
 
     description TEXT NOT NULL,
 
-    statut VARCHAR(50),
-
     CONSTRAINT fk_recommandation_constat
         FOREIGN KEY (constat_id)
         REFERENCES constat(id)
+        ON DELETE CASCADE
+);
+
+ALTER TABLE recommandation
+ADD COLUMN retenue BOOLEAN NOT NULL DEFAULT FALSE;
+
+ALTER TABLE recommandation
+ADD COLUMN maintenue BOOLEAN;
+
+CREATE UNIQUE INDEX uq_recommandation_retenue_par_constat
+ON recommandation (constat_id)
+WHERE retenue = TRUE;
+
+CREATE TABLE reponse (
+    id BIGSERIAL PRIMARY KEY,
+    recommandation_id BIGINT NOT NULL,
+    descriptions TEXT NOT NULL,
+    date_reponse DATE,
+
+    CONSTRAINT fk_reponse_recommandation
+        FOREIGN KEY (recommandation_id)
+        REFERENCES recommandation(id)
         ON DELETE CASCADE
 );
 

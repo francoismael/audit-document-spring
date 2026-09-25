@@ -6,7 +6,7 @@ public class RecommandationRequest {
 
     private String description;
 
-    private String statut;
+    private Boolean retenue;
 
     public RecommandationRequest() {
     }
@@ -27,11 +27,11 @@ public class RecommandationRequest {
         this.description = description;
     }
 
-    public String getStatut() {
-        return statut;
+    public Boolean getRetenue() {
+        return retenue;
     }
 
-    public void setStatut(String statut) {
-        this.statut = statut;
+    public void setRetenue(Boolean retenue) {
+        this.retenue = retenue;
     }
 }

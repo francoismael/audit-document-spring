@@ -9,8 +9,7 @@ import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
-import com.audit.audit_document.domain.entity.LigneProgramme;
-import com.audit.audit_document.domain.entity.Objectif;
+
 import com.audit.audit_document.application.dto.CauseRequest;
 import com.audit.audit_document.application.dto.CauseResponse;
 import com.audit.audit_document.application.dto.ConsequenceRequest;
@@ -30,6 +29,8 @@ import com.audit.audit_document.application.usecases.UpdateConstatUseCase;
 import com.audit.audit_document.domain.entity.Cause;
 import com.audit.audit_document.domain.entity.Consequence;
 import com.audit.audit_document.domain.entity.Constat;
+import com.audit.audit_document.domain.entity.LigneProgramme;
+import com.audit.audit_document.domain.entity.Objectif;
 import com.audit.audit_document.domain.entity.Recommandation;
 import com.audit.audit_document.domain.entity.Risque;
 import com.audit.audit_document.domain.entity.Test;
@@ -62,32 +63,84 @@ public class ConstatService implements
     // =========================================================
 
     @Override
-    public ConstatResponse create(CreateConstatRequest request) {
+    public ConstatResponse create(
+            CreateConstatRequest request) {
 
         validateRequest(request);
 
-        Test test = trouverTest(request.getTestId());
+        Test test = trouverTest(
+                request.getTestId()
+        );
 
-        Long number = constatRepository.getNextReference();
+        /*
+         * Une seule recommandation peut être retenue
+         * pour un même constat.
+         */
+        validerRecommandationsRetenues(
+                request.getRecommandations()
+        );
 
-        String reference = String.format("CST%03d", number);
+        /*
+         * Génération automatique de la référence.
+         * Exemple : CST001, CST002, CST003...
+         */
+        Long number =
+                constatRepository.getNextReference();
 
-        Constat constat = new Constat();
+        String reference =
+                String.format(
+                        "CST%03d",
+                        number
+                );
+
+        Constat constat =
+                new Constat();
 
         constat.setTest(test);
-        constat.setReference(reference);
-        constat.setDescriptions(request.getDescriptions());
-        constat.setNiveauRisque(request.getNiveauRisque());
+
+        constat.setReference(
+                reference
+        );
+
+        constat.setDescriptions(
+                request.getDescriptions()
+        );
+
+        constat.setNiveauRisque(
+                request.getNiveauRisque()
+        );
+
         constat.setDirectionServiceConcerne(
                 request.getDirectionServiceConcerne()
         );
 
-        ajouterCauses(constat, request.getCauses());
-        ajouterRisques(constat, request.getRisques());
-        ajouterConsequences(constat, request.getConsequences());
-        ajouterRecommandations(constat, request.getRecommandations());
+        /*
+         * Création des enfants.
+         */
+        ajouterCauses(
+                constat,
+                request.getCauses()
+        );
 
-        Constat saved = constatRepository.save(constat);
+        ajouterRisques(
+                constat,
+                request.getRisques()
+        );
+
+        ajouterConsequences(
+                constat,
+                request.getConsequences()
+        );
+
+        ajouterRecommandations(
+                constat,
+                request.getRecommandations()
+        );
+
+        Constat saved =
+                constatRepository.save(
+                        constat
+                );
 
         return toResponse(saved);
     }
@@ -97,16 +150,22 @@ public class ConstatService implements
     // =========================================================
 
     @Override
-    public ConstatResponse getById(Long id) {
+    public ConstatResponse getById(
+            Long id) {
 
-        Constat constat = constatRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Constat introuvable avec l'id : " + id
-                        )
-                );
+        Constat constat =
+                constatRepository
+                        .findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Constat introuvable avec l'id : "
+                                                + id
+                                )
+                        );
 
-        return toResponse(constat);
+        return toResponse(
+                constat
+        );
     }
 
     // =========================================================
@@ -116,7 +175,8 @@ public class ConstatService implements
     @Override
     public List<ConstatResponse> getAll() {
 
-        return constatRepository.findAll()
+        return constatRepository
+                .findAll()
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
@@ -127,11 +187,13 @@ public class ConstatService implements
     // =========================================================
 
     @Override
-    public List<ConstatResponse> getByTestId(Long testId) {
+    public List<ConstatResponse> getByTestId(
+            Long testId) {
 
         trouverTest(testId);
 
-        return constatRepository.findByTestId(testId)
+        return constatRepository
+                .findByTestId(testId)
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
@@ -148,37 +210,78 @@ public class ConstatService implements
 
         validateRequest(request);
 
-        Constat constat = constatRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Constat introuvable avec l'id : " + id
-                        )
+        /*
+         * Vérifie qu'il n'y a pas plusieurs
+         * recommandations retenues.
+         */
+        validerRecommandationsRetenues(
+                request.getRecommandations()
+        );
+
+        Constat constat =
+                constatRepository
+                        .findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Constat introuvable avec l'id : "
+                                                + id
+                                )
+                        );
+
+        Test test =
+                trouverTest(
+                        request.getTestId()
                 );
 
-        Test test = trouverTest(request.getTestId());
-
-
+        /*
+         * Mise à jour des informations
+         * du constat.
+         */
         constat.setTest(test);
-        constat.setDescriptions(request.getDescriptions());
-        constat.setNiveauRisque(request.getNiveauRisque());
+
+        constat.setDescriptions(
+                request.getDescriptions()
+        );
+
+        constat.setNiveauRisque(
+                request.getNiveauRisque()
+        );
+
         constat.setDirectionServiceConcerne(
                 request.getDirectionServiceConcerne()
         );
 
-        mettreAJourCauses(constat, request.getCauses());
-        mettreAJourRisques(constat, request.getRisques());
+        /*
+         * Mise à jour des enfants.
+         */
+        mettreAJourCauses(
+                constat,
+                request.getCauses()
+        );
+
+        mettreAJourRisques(
+                constat,
+                request.getRisques()
+        );
+
         mettreAJourConsequences(
                 constat,
                 request.getConsequences()
         );
+
         mettreAJourRecommandations(
                 constat,
                 request.getRecommandations()
         );
 
-        Constat updated = constatRepository.save(constat);
+        Constat updated =
+                constatRepository.save(
+                        constat
+                );
 
-        return toResponse(updated);
+        return toResponse(
+                updated
+        );
     }
 
     // =========================================================
@@ -186,39 +289,49 @@ public class ConstatService implements
     // =========================================================
 
     @Override
-    public void delete(Long id) {
+    public void delete(
+            Long id) {
 
-        Constat constat = constatRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Constat introuvable avec l'id : " + id
-                        )
-                );
+        Constat constat =
+                constatRepository
+                        .findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Constat introuvable avec l'id : "
+                                                + id
+                                )
+                        );
 
-
-        constatRepository.deleteById(constat.getId());
+        constatRepository.deleteById(
+                constat.getId()
+        );
     }
 
     // =========================================================
     // VALIDATION
     // =========================================================
 
-    private void validateRequest(CreateConstatRequest request) {
+    private void validateRequest(
+            CreateConstatRequest request) {
 
         if (request == null) {
+
             throw new RuntimeException(
                     "La requête ne peut pas être null."
             );
         }
 
         if (request.getTestId() == null) {
+
             throw new RuntimeException(
                     "Le testId est obligatoire."
             );
         }
 
         if (request.getDescriptions() == null
-                || request.getDescriptions().trim().isEmpty()) {
+                || request.getDescriptions()
+                        .trim()
+                        .isEmpty()) {
 
             throw new RuntimeException(
                     "La description du constat est obligatoire."
@@ -226,19 +339,62 @@ public class ConstatService implements
         }
 
         if (request.getCauses() == null) {
-            request.setCauses(new ArrayList<>());
+
+            request.setCauses(
+                    new ArrayList<>()
+            );
         }
 
         if (request.getRisques() == null) {
-            request.setRisques(new ArrayList<>());
+
+            request.setRisques(
+                    new ArrayList<>()
+            );
         }
 
         if (request.getConsequences() == null) {
-            request.setConsequences(new ArrayList<>());
+
+            request.setConsequences(
+                    new ArrayList<>()
+            );
         }
 
         if (request.getRecommandations() == null) {
-            request.setRecommandations(new ArrayList<>());
+
+            request.setRecommandations(
+                    new ArrayList<>()
+            );
+        }
+    }
+
+    // =========================================================
+    // VALIDATION DES RECOMMANDATIONS RETENUES
+    // =========================================================
+
+    private void validerRecommandationsRetenues(
+            List<RecommandationRequest> requests) {
+
+        int nombreRetenues = 0;
+
+        for (RecommandationRequest request :
+                requests) {
+
+            if (request == null) {
+                continue;
+            }
+
+            if (Boolean.TRUE.equals(
+                    request.getRetenue())) {
+
+                nombreRetenues++;
+            }
+        }
+
+        if (nombreRetenues > 1) {
+
+            throw new RuntimeException(
+                    "Une seule recommandation peut être retenue pour un constat."
+            );
         }
     }
 
@@ -246,12 +402,15 @@ public class ConstatService implements
     // TEST
     // =========================================================
 
-    private Test trouverTest(Long testId) {
+    private Test trouverTest(
+            Long testId) {
 
-        return testRepository.findById(testId)
+        return testRepository
+                .findById(testId)
                 .orElseThrow(() ->
                         new RuntimeException(
-                                "Test introuvable avec l'id : " + testId
+                                "Test introuvable avec l'id : "
+                                        + testId
                         )
                 );
     }
@@ -264,13 +423,19 @@ public class ConstatService implements
             Constat constat,
             List<CauseRequest> requests) {
 
-        for (CauseRequest request : requests) {
+        for (CauseRequest request :
+                requests) {
 
-            Cause cause = new Cause();
+            Cause cause =
+                    new Cause();
 
-            cause.setDescriptions(request.getDescriptions());
+            cause.setDescriptions(
+                    request.getDescriptions()
+            );
 
-            constat.addCause(cause);
+            constat.addCause(
+                    cause
+            );
         }
     }
 
@@ -278,14 +443,23 @@ public class ConstatService implements
             Constat constat,
             List<RisqueRequest> requests) {
 
-        for (RisqueRequest request : requests) {
+        for (RisqueRequest request :
+                requests) {
 
-            Risque risque = new Risque();
+            Risque risque =
+                    new Risque();
 
-            risque.setDescriptions(request.getDescriptions());
-            risque.setNiveau(request.getNiveau());
+            risque.setDescriptions(
+                    request.getDescriptions()
+            );
 
-            constat.addRisque(risque);
+            risque.setNiveau(
+                    request.getNiveau()
+            );
+
+            constat.addRisque(
+                    risque
+            );
         }
     }
 
@@ -293,15 +467,19 @@ public class ConstatService implements
             Constat constat,
             List<ConsequenceRequest> requests) {
 
-        for (ConsequenceRequest request : requests) {
+        for (ConsequenceRequest request :
+                requests) {
 
-            Consequence consequence = new Consequence();
+            Consequence consequence =
+                    new Consequence();
 
             consequence.setDescriptions(
                     request.getDescriptions()
             );
 
-            constat.addConsequence(consequence);
+            constat.addConsequence(
+                    consequence
+            );
         }
     }
 
@@ -309,7 +487,12 @@ public class ConstatService implements
             Constat constat,
             List<RecommandationRequest> requests) {
 
-        for (RecommandationRequest request : requests) {
+        for (RecommandationRequest request :
+                requests) {
+
+            if (request == null) {
+                continue;
+            }
 
             Recommandation recommandation =
                     new Recommandation();
@@ -318,11 +501,30 @@ public class ConstatService implements
                     request.getDescription()
             );
 
-            recommandation.setStatut(
-                    request.getStatut()
+            /*
+             * Si retenue est null,
+             * on considère false.
+             */
+            Boolean retenue =
+                    request.getRetenue() != null
+                            ? request.getRetenue()
+                            : false;
+
+            recommandation.setRetenue(
+                    retenue
             );
 
-            constat.addRecommandation(recommandation);
+            /*
+             * Une nouvelle recommandation
+             * n'est pas encore maintenue.
+             */
+            recommandation.setMaintenue(
+                    null
+            );
+
+            constat.addRecommandation(
+                    recommandation
+            );
         }
     }
 
@@ -334,49 +536,63 @@ public class ConstatService implements
             Constat constat,
             List<CauseRequest> requests) {
 
-        Set<Long> idsRecus = new HashSet<>();
+        Set<Long> idsRecus =
+                new HashSet<>();
 
-        for (CauseRequest request : requests) {
+        for (CauseRequest request :
+                requests) {
 
             if (request.getId() == null) {
 
-                Cause cause = new Cause();
+                Cause cause =
+                        new Cause();
 
                 cause.setDescriptions(
                         request.getDescriptions()
                 );
 
-                constat.addCause(cause);
+                constat.addCause(
+                        cause
+                );
 
             } else {
 
-                Cause cause = trouverCauseDuConstat(
-                        constat,
-                        request.getId()
-                );
+                Cause cause =
+                        trouverCauseDuConstat(
+                                constat,
+                                request.getId()
+                        );
 
                 cause.setDescriptions(
                         request.getDescriptions()
                 );
 
-                idsRecus.add(request.getId());
+                idsRecus.add(
+                        request.getId()
+                );
             }
         }
 
-        supprimerCausesAbsentes(constat, idsRecus);
+        supprimerCausesAbsentes(
+                constat,
+                idsRecus
+        );
     }
 
     private void mettreAJourRisques(
             Constat constat,
             List<RisqueRequest> requests) {
 
-        Set<Long> idsRecus = new HashSet<>();
+        Set<Long> idsRecus =
+                new HashSet<>();
 
-        for (RisqueRequest request : requests) {
+        for (RisqueRequest request :
+                requests) {
 
             if (request.getId() == null) {
 
-                Risque risque = new Risque();
+                Risque risque =
+                        new Risque();
 
                 risque.setDescriptions(
                         request.getDescriptions()
@@ -386,14 +602,17 @@ public class ConstatService implements
                         request.getNiveau()
                 );
 
-                constat.addRisque(risque);
+                constat.addRisque(
+                        risque
+                );
 
             } else {
 
-                Risque risque = trouverRisqueDuConstat(
-                        constat,
-                        request.getId()
-                );
+                Risque risque =
+                        trouverRisqueDuConstat(
+                                constat,
+                                request.getId()
+                        );
 
                 risque.setDescriptions(
                         request.getDescriptions()
@@ -403,30 +622,40 @@ public class ConstatService implements
                         request.getNiveau()
                 );
 
-                idsRecus.add(request.getId());
+                idsRecus.add(
+                        request.getId()
+                );
             }
         }
 
-        supprimerRisquesAbsents(constat, idsRecus);
+        supprimerRisquesAbsentes(
+                constat,
+                idsRecus
+        );
     }
 
     private void mettreAJourConsequences(
             Constat constat,
             List<ConsequenceRequest> requests) {
 
-        Set<Long> idsRecus = new HashSet<>();
+        Set<Long> idsRecus =
+                new HashSet<>();
 
-        for (ConsequenceRequest request : requests) {
+        for (ConsequenceRequest request :
+                requests) {
 
             if (request.getId() == null) {
 
-                Consequence consequence = new Consequence();
+                Consequence consequence =
+                        new Consequence();
 
                 consequence.setDescriptions(
                         request.getDescriptions()
                 );
 
-                constat.addConsequence(consequence);
+                constat.addConsequence(
+                        consequence
+                );
 
             } else {
 
@@ -440,7 +669,9 @@ public class ConstatService implements
                         request.getDescriptions()
                 );
 
-                idsRecus.add(request.getId());
+                idsRecus.add(
+                        request.getId()
+                );
             }
         }
 
@@ -454,10 +685,21 @@ public class ConstatService implements
             Constat constat,
             List<RecommandationRequest> requests) {
 
-        Set<Long> idsRecus = new HashSet<>();
+        Set<Long> idsRecus =
+                new HashSet<>();
 
-        for (RecommandationRequest request : requests) {
+        for (RecommandationRequest request :
+                requests) {
 
+            if (request == null) {
+                continue;
+            }
+
+            /*
+             * ==========================================
+             * NOUVELLE RECOMMANDATION
+             * ==========================================
+             */
             if (request.getId() == null) {
 
                 Recommandation recommandation =
@@ -467,15 +709,35 @@ public class ConstatService implements
                         request.getDescription()
                 );
 
-                recommandation.setStatut(
-                        request.getStatut()
+                Boolean retenue =
+                        request.getRetenue() != null
+                                ? request.getRetenue()
+                                : false;
+
+                recommandation.setRetenue(
+                        retenue
+                );
+
+                /*
+                 * Une nouvelle recommandation
+                 * n'est pas encore maintenue.
+                 */
+                recommandation.setMaintenue(
+                        null
                 );
 
                 constat.addRecommandation(
                         recommandation
                 );
 
-            } else {
+            }
+
+            /*
+             * ==========================================
+             * RECOMMANDATION EXISTANTE
+             * ==========================================
+             */
+            else {
 
                 Recommandation recommandation =
                         trouverRecommandationDuConstat(
@@ -487,11 +749,34 @@ public class ConstatService implements
                         request.getDescription()
                 );
 
-                recommandation.setStatut(
-                        request.getStatut()
+                Boolean retenue =
+                        request.getRetenue() != null
+                                ? request.getRetenue()
+                                : false;
+
+                recommandation.setRetenue(
+                        retenue
                 );
 
-                idsRecus.add(request.getId());
+                /*
+                 * Si la recommandation n'est plus retenue,
+                 * aucune décision de maintien ne doit rester.
+                 */
+                if (!retenue) {
+
+                    recommandation.setMaintenue(
+                            null
+                    );
+                }
+
+                /*
+                 * Si retenue = true,
+                 * on conserve l'ancienne valeur de
+                 * maintenue.
+                 */
+                idsRecus.add(
+                        request.getId()
+                );
             }
         }
 
@@ -513,12 +798,14 @@ public class ConstatService implements
                 .stream()
                 .filter(cause ->
                         cause.getId() != null
-                                && cause.getId().equals(causeId)
+                                && cause.getId()
+                                        .equals(causeId)
                 )
                 .findFirst()
                 .orElseThrow(() ->
                         new RuntimeException(
-                                "La cause " + causeId
+                                "La cause "
+                                        + causeId
                                         + " n'appartient pas au constat "
                                         + constat.getId()
                         )
@@ -533,12 +820,14 @@ public class ConstatService implements
                 .stream()
                 .filter(risque ->
                         risque.getId() != null
-                                && risque.getId().equals(risqueId)
+                                && risque.getId()
+                                        .equals(risqueId)
                 )
                 .findFirst()
                 .orElseThrow(() ->
                         new RuntimeException(
-                                "Le risque " + risqueId
+                                "Le risque "
+                                        + risqueId
                                         + " n'appartient pas au constat "
                                         + constat.getId()
                         )
@@ -553,12 +842,14 @@ public class ConstatService implements
                 .stream()
                 .filter(consequence ->
                         consequence.getId() != null
-                                && consequence.getId().equals(consequenceId)
+                                && consequence.getId()
+                                        .equals(consequenceId)
                 )
                 .findFirst()
                 .orElseThrow(() ->
                         new RuntimeException(
-                                "La conséquence " + consequenceId
+                                "La conséquence "
+                                        + consequenceId
                                         + " n'appartient pas au constat "
                                         + constat.getId()
                         )
@@ -573,9 +864,8 @@ public class ConstatService implements
                 .stream()
                 .filter(recommandation ->
                         recommandation.getId() != null
-                                && recommandation.getId().equals(
-                                        recommandationId
-                                )
+                                && recommandation.getId()
+                                        .equals(recommandationId)
                 )
                 .findFirst()
                 .orElseThrow(() ->
@@ -596,180 +886,207 @@ public class ConstatService implements
             Constat constat,
             Set<Long> idsRecus) {
 
-        constat.getCauses().removeIf(cause ->
-                cause.getId() != null
-                        && !idsRecus.contains(cause.getId())
-        );
+        constat.getCauses()
+                .removeIf(cause ->
+                        cause.getId() != null
+                                && !idsRecus.contains(
+                                        cause.getId()
+                                )
+                );
     }
 
-    private void supprimerRisquesAbsents(
+    private void supprimerRisquesAbsentes(
             Constat constat,
             Set<Long> idsRecus) {
 
-        constat.getRisques().removeIf(risque ->
-                risque.getId() != null
-                        && !idsRecus.contains(risque.getId())
-        );
+        constat.getRisques()
+                .removeIf(risque ->
+                        risque.getId() != null
+                                && !idsRecus.contains(
+                                        risque.getId()
+                                )
+                );
     }
 
     private void supprimerConsequencesAbsentes(
             Constat constat,
             Set<Long> idsRecus) {
 
-        constat.getConsequences().removeIf(consequence ->
-                consequence.getId() != null
-                        && !idsRecus.contains(consequence.getId())
-        );
+        constat.getConsequences()
+                .removeIf(consequence ->
+                        consequence.getId() != null
+                                && !idsRecus.contains(
+                                        consequence.getId()
+                                )
+                );
     }
 
     private void supprimerRecommandationsAbsentes(
             Constat constat,
             Set<Long> idsRecus) {
 
-        constat.getRecommandations().removeIf(recommandation ->
-                recommandation.getId() != null
-                        && !idsRecus.contains(recommandation.getId())
-        );
+        constat.getRecommandations()
+                .removeIf(recommandation ->
+                        recommandation.getId() != null
+                                && !idsRecus.contains(
+                                        recommandation.getId()
+                                )
+                );
     }
 
     // =========================================================
     // MAPPING RESPONSE
     // =========================================================
 
-    private ConstatResponse toResponse(Constat constat) {
+    private ConstatResponse toResponse(
+            Constat constat) {
 
-    ConstatResponse response = new ConstatResponse();
+        ConstatResponse response =
+                new ConstatResponse();
 
-    // =========================================================
-    // CONSTAT
-    // =========================================================
+        // =====================================================
+        // CONSTAT
+        // =====================================================
 
-    response.setId(
-            constat.getId()
-    );
-
-    response.setReference(
-            constat.getReference()
-    );
-
-    response.setDescriptions(
-            constat.getDescriptions()
-    );
-
-    response.setNiveauRisque(
-            constat.getNiveauRisque()
-    );
-
-    response.setDirectionServiceConcerne(
-            constat.getDirectionServiceConcerne()
-    );
-
-    // =========================================================
-    // TEST
-    // =========================================================
-
-    Test test = constat.getTest();
-
-    if (test != null) {
-
-        response.setTestId(
-                test.getId()
+        response.setId(
+                constat.getId()
         );
 
-        response.setTestReference(
-                test.getReference()
+        response.setReference(
+                constat.getReference()
+        );
+
+        response.setDescriptions(
+                constat.getDescriptions()
+        );
+
+        response.setNiveauRisque(
+                constat.getNiveauRisque()
+        );
+
+        response.setDirectionServiceConcerne(
+                constat.getDirectionServiceConcerne()
         );
 
         // =====================================================
-        // LIGNE DU PROGRAMME
+        // TEST
         // =====================================================
 
-        LigneProgramme ligneProgramme =
-                test.getLigneProgramme();
+        Test test =
+                constat.getTest();
 
-        if (ligneProgramme != null) {
+        if (test != null) {
 
-            response.setNumeroControle(
-                    ligneProgramme.getNumeroControle()
+            response.setTestId(
+                    test.getId()
             );
 
-            response.setDomaineCycle(
-                    ligneProgramme.getDomaineCycle()
+            response.setTestReference(
+                    test.getReference()
             );
 
             // =================================================
-            // OBJECTIF
+            // LIGNE DU PROGRAMME
             // =================================================
 
-            Objectif objectif =
-                    ligneProgramme.getObjectif();
+            LigneProgramme ligneProgramme =
+                    test.getLigneProgramme();
 
-            if (objectif != null) {
+            if (ligneProgramme != null) {
 
-                response.setObjectifId(
-                        objectif.getId()
+                response.setNumeroControle(
+                        ligneProgramme.getNumeroControle()
                 );
 
-                response.setObjectifNumero(
-                        objectif.getNumero()
+                response.setDomaineCycle(
+                        ligneProgramme.getDomaineCycle()
                 );
 
-                response.setObjectifDescription(
-                        objectif.getDescriptions()
-                );
+                // =============================================
+                // OBJECTIF
+                // =============================================
+
+                Objectif objectif =
+                        ligneProgramme.getObjectif();
+
+                if (objectif != null) {
+
+                    response.setObjectifId(
+                            objectif.getId()
+                    );
+
+                    response.setObjectifNumero(
+                            objectif.getNumero()
+                    );
+
+                    response.setObjectifDescription(
+                            objectif.getDescriptions()
+                    );
+                }
             }
         }
+
+        // =====================================================
+        // CAUSES
+        // =====================================================
+
+        response.setCauses(
+                constat.getCauses()
+                        .stream()
+                        .map(this::toCauseResponse)
+                        .collect(Collectors.toList())
+        );
+
+        // =====================================================
+        // RISQUES
+        // =====================================================
+
+        response.setRisques(
+                constat.getRisques()
+                        .stream()
+                        .map(this::toRisqueResponse)
+                        .collect(Collectors.toList())
+        );
+
+        // =====================================================
+        // CONSEQUENCES
+        // =====================================================
+
+        response.setConsequences(
+                constat.getConsequences()
+                        .stream()
+                        .map(this::toConsequenceResponse)
+                        .collect(Collectors.toList())
+        );
+
+        // =====================================================
+        // RECOMMANDATIONS
+        // =====================================================
+
+        response.setRecommandations(
+                constat.getRecommandations()
+                        .stream()
+                        .map(this::toRecommandationResponse)
+                        .collect(Collectors.toList())
+        );
+
+        return response;
     }
 
     // =========================================================
-    // CAUSES
+    // CAUSE RESPONSE
     // =========================================================
 
-    response.setCauses(
-            constat.getCauses()
-                    .stream()
-                    .map(this::toCauseResponse)
-                    .collect(Collectors.toList())
-    );
+    private CauseResponse toCauseResponse(
+            Cause cause) {
 
-    // =========================================================
-    // RISQUES
-    // =========================================================
+        CauseResponse response =
+                new CauseResponse();
 
-    response.setRisques(
-            constat.getRisques()
-                    .stream()
-                    .map(this::toRisqueResponse)
-                    .collect(Collectors.toList())
-    );
+        response.setId(
+                cause.getId()
+        );
 
-    // =========================================================
-    // CONSEQUENCES
-    // =========================================================
-
-    response.setConsequences(
-            constat.getConsequences()
-                    .stream()
-                    .map(this::toConsequenceResponse)
-                    .collect(Collectors.toList())
-    );
-
-
-    response.setRecommandations(
-            constat.getRecommandations()
-                    .stream()
-                    .map(this::toRecommandationResponse)
-                    .collect(Collectors.toList())
-    );
-
-    return response;
-}
-
-    private CauseResponse toCauseResponse(Cause cause) {
-
-        CauseResponse response = new CauseResponse();
-
-        response.setId(cause.getId());
         response.setDescriptions(
                 cause.getDescriptions()
         );
@@ -777,14 +1094,24 @@ public class ConstatService implements
         return response;
     }
 
-    private RisqueResponse toRisqueResponse(Risque risque) {
+    // =========================================================
+    // RISQUE RESPONSE
+    // =========================================================
 
-        RisqueResponse response = new RisqueResponse();
+    private RisqueResponse toRisqueResponse(
+            Risque risque) {
 
-        response.setId(risque.getId());
+        RisqueResponse response =
+                new RisqueResponse();
+
+        response.setId(
+                risque.getId()
+        );
+
         response.setDescriptions(
                 risque.getDescriptions()
         );
+
         response.setNiveau(
                 risque.getNiveau()
         );
@@ -792,13 +1119,20 @@ public class ConstatService implements
         return response;
     }
 
+    // =========================================================
+    // CONSEQUENCE RESPONSE
+    // =========================================================
+
     private ConsequenceResponse toConsequenceResponse(
             Consequence consequence) {
 
         ConsequenceResponse response =
                 new ConsequenceResponse();
 
-        response.setId(consequence.getId());
+        response.setId(
+                consequence.getId()
+        );
+
         response.setDescriptions(
                 consequence.getDescriptions()
         );
@@ -806,18 +1140,30 @@ public class ConstatService implements
         return response;
     }
 
+    // =========================================================
+    // RECOMMANDATION RESPONSE
+    // =========================================================
+
     private RecommandationResponse toRecommandationResponse(
             Recommandation recommandation) {
 
         RecommandationResponse response =
                 new RecommandationResponse();
 
-        response.setId(recommandation.getId());
+        response.setId(
+                recommandation.getId()
+        );
+
         response.setDescription(
                 recommandation.getDescription()
         );
-        response.setStatut(
-                recommandation.getStatut()
+
+        response.setRetenue(
+                recommandation.getRetenue()
+        );
+
+        response.setMaintenue(
+                recommandation.getMaintenue()
         );
 
         return response;

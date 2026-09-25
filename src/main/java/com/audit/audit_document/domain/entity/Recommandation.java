@@ -25,8 +25,11 @@ public class Recommandation {
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "statut", length = 50)
-    private String statut;
+    @Column(name = "retenue", nullable = false)
+    private Boolean retenue = false;
+
+    @Column(name = "maintenue")
+    private Boolean maintenue;
 
     public Recommandation() {
     }
@@ -55,11 +58,19 @@ public class Recommandation {
         this.description = description;
     }
 
-    public String getStatut() {
-        return statut;
+    public Boolean getRetenue() {
+        return retenue;
     }
 
-    public void setStatut(String statut) {
-        this.statut = statut;
+    public void setRetenue(Boolean retenue) {
+        this.retenue = retenue;
+    }
+
+    public Boolean getMaintenue() {
+        return maintenue;
+    }
+
+    public void setMaintenue(Boolean maintenue) {
+        this.maintenue = maintenue;
     }
 }

@@ -485,6 +485,24 @@ CREATE TABLE reponse (
         ON DELETE CASCADE
 );
 
+CREATE TABLE rapport_audit (
+    id BIGSERIAL PRIMARY KEY,
+    mission_id BIGINT NOT NULL UNIQUE,
+    motifs TEXT,
+    nature VARCHAR(255),
+    date_emission DATE,
+    version_rapport VARCHAR(50) NOT NULL DEFAULT 'définitif',
+    proprietaire_document VARCHAR(255),
+    destinataires TEXT,
+    classification VARCHAR(255),
+
+    CONSTRAINT fk_rapport_mission
+        FOREIGN KEY (mission_id)
+        REFERENCES mission(id)
+        ON DELETE CASCADE
+);
+
+
 INSERT INTO structure (nom, descriptions)
 VALUES
 ('Direction Générale des Finances', 'Structure chargée de la gestion financière'),

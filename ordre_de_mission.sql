@@ -503,6 +503,80 @@ CREATE TABLE rapport_audit (
 );
 
 
+CREATE TABLE pv_affirmation (
+    id BIGSERIAL PRIMARY KEY,
+
+    mission_id BIGINT NOT NULL UNIQUE,
+
+    date_entretien DATE NOT NULL,
+
+    lieu VARCHAR(255),
+
+    observations_complementaires TEXT,
+
+    CONSTRAINT fk_pv_affirmation_mission
+        FOREIGN KEY (mission_id)
+        REFERENCES mission(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE pv_affirmation_participant (
+    id BIGSERIAL PRIMARY KEY,
+
+    pv_affirmation_id BIGINT NOT NULL,
+
+    mission_personne_id BIGINT NOT NULL,
+
+    type_participant VARCHAR(50) NOT NULL,
+
+    CONSTRAINT fk_pv_participant_pv
+        FOREIGN KEY (pv_affirmation_id)
+        REFERENCES pv_affirmation(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_pv_participant_mission_personne
+        FOREIGN KEY (mission_personne_id)
+        REFERENCES mission_personne(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT chk_pv_participant_type
+        CHECK (
+            type_participant IN (
+                'AUDITEUR',
+                'ENTITE_AUDITEE'
+            )
+        )
+);
+
+CREATE TABLE pv_affirmation_ligne (
+    id BIGSERIAL PRIMARY KEY,
+
+    pv_affirmation_id BIGINT NOT NULL,
+
+    constat_id BIGINT NOT NULL,
+
+    question TEXT NOT NULL,
+
+    reponse_entite TEXT,
+
+    pieces_justificatives TEXT,
+
+    commentaires_auditeurs TEXT,
+
+    CONSTRAINT fk_pv_ligne_pv
+        FOREIGN KEY (pv_affirmation_id)
+        REFERENCES pv_affirmation(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_pv_ligne_constat
+        FOREIGN KEY (constat_id)
+        REFERENCES constat(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT uq_pv_ligne_constat
+        UNIQUE (pv_affirmation_id, constat_id)
+);
+
 INSERT INTO structure (nom, descriptions)
 VALUES
 ('Direction Générale des Finances', 'Structure chargée de la gestion financière'),

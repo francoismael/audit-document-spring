@@ -27,7 +27,8 @@ public class GetAllReunionsService
             ReunionPersonneRepository reunionPersonneRepository) {
 
         this.reunionRepository = reunionRepository;
-        this.reunionPersonneRepository = reunionPersonneRepository;
+        this.reunionPersonneRepository =
+                reunionPersonneRepository;
     }
 
     @Override
@@ -49,14 +50,18 @@ public class GetAllReunionsService
         return responses;
     }
 
-    private ReunionResponse buildResponse(Reunion reunion) {
+    private ReunionResponse buildResponse(
+            Reunion reunion) {
 
         ReunionResponse response =
                 new ReunionResponse();
 
         response.setId(reunion.getId());
 
-        // Mission
+        /*
+           MISSION
+           */
+
         if (reunion.getMission() != null) {
 
             response.setMissionId(
@@ -69,7 +74,10 @@ public class GetAllReunionsService
                     reunion.getMission().getIntitule());
         }
 
-        // Reunion
+        /*
+           INFORMATIONS REUNION
+           */
+
         response.setType(
                 reunion.getType());
 
@@ -82,13 +90,19 @@ public class GetAllReunionsService
         response.setHeureFin(
                 reunion.getHeureFin());
 
+        response.setHeureLevee(
+                reunion.getHeureLevee());
+
         response.setLieu(
                 reunion.getLieu());
+
+        /*
+           REUNION D'OUVERTURE
+           */
 
         response.setObservations(
                 reunion.getObservations());
 
-        // Points abordés
         response.setPointsDaiIntroduction(
                 reunion.getPointsDaiIntroduction());
 
@@ -107,7 +121,35 @@ public class GetAllReunionsService
         response.setPointsInterlocuteursOrganisation(
                 reunion.getPointsInterlocuteursOrganisation());
 
-        // Participants
+        /*
+           REUNION DE CLOTURE
+           */
+
+        response.setRemerciements(
+                reunion.getRemerciements());
+
+        response.setRappelPerimetre(
+                reunion.getRappelPerimetre());
+
+        response.setSyntheseConstats(
+                reunion.getSyntheseConstats());
+
+        response.setPointsFortsIdentifies(
+                reunion.getPointsFortsIdentifies());
+
+        response.setResumeResultatsVerification(
+                reunion.getResumeResultatsVerification());
+
+        response.setResumeRecommandationsPlansActions(
+                reunion.getResumeRecommandationsPlansActions());
+
+        response.setObservationsCommentaires(
+                reunion.getObservationsCommentaires());
+
+        /*
+           PARTICIPANTS
+           */
+
         List<ReunionPersonne> participants =
                 reunionPersonneRepository
                         .findByReunionId(reunion.getId());
@@ -115,7 +157,8 @@ public class GetAllReunionsService
         List<ReunionPersonneResponse> participantResponses =
                 new ArrayList<>();
 
-        for (ReunionPersonne participant : participants) {
+        for (ReunionPersonne participant
+                : participants) {
 
             ReunionPersonneResponse participantResponse =
                     new ReunionPersonneResponse();

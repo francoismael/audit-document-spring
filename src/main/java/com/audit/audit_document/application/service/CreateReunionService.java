@@ -39,10 +39,31 @@ public class CreateReunionService implements CreateReunionUseCase {
     @Transactional
     public ReunionResponse execute(CreateReunionRequest request) {
 
+        validateType(request.getType());
+
         Mission mission = missionRepository
                 .findById(request.getMissionId())
                 .orElseThrow(() ->
-                        new RuntimeException("Mission introuvable"));
+                        new RuntimeException(
+                                "Mission introuvable"));
+
+        boolean reunionExiste = reunionRepository
+                .findAll()
+                .stream()
+                .anyMatch(reunion ->
+                        reunion.getMission() != null
+                                && reunion.getMission().getId()
+                                .equals(mission.getId())
+                                && reunion.getType() != null
+                                && reunion.getType()
+                                .equals(request.getType()));
+
+        if (reunionExiste) {
+            throw new RuntimeException(
+                    "Une réunion de type "
+                            + request.getType()
+                            + " existe déjà pour cette mission");
+        }
 
         Reunion reunion = new Reunion();
 
@@ -51,8 +72,15 @@ public class CreateReunionService implements CreateReunionUseCase {
         reunion.setDateReunion(request.getDateReunion());
         reunion.setHeureDebut(request.getHeureDebut());
         reunion.setHeureFin(request.getHeureFin());
+        reunion.setHeureLevee(request.getHeureLevee());
         reunion.setLieu(request.getLieu());
-        reunion.setObservations(request.getObservations());
+
+        /* 
+           REUNION D'OUVERTURE
+            */
+
+        reunion.setObservations(
+                request.getObservations());
 
         reunion.setPointsDaiIntroduction(
                 request.getPointsDaiIntroduction());
@@ -72,13 +100,43 @@ public class CreateReunionService implements CreateReunionUseCase {
         reunion.setPointsInterlocuteursOrganisation(
                 request.getPointsInterlocuteursOrganisation());
 
+        /* 
+           REUNION DE CLOTURE
+            */
+
+        reunion.setRemerciements(
+                request.getRemerciements());
+
+        reunion.setRappelPerimetre(
+                request.getRappelPerimetre());
+
+        reunion.setSyntheseConstats(
+                request.getSyntheseConstats());
+
+        reunion.setPointsFortsIdentifies(
+                request.getPointsFortsIdentifies());
+
+        reunion.setResumeResultatsVerification(
+                request.getResumeResultatsVerification());
+
+        reunion.setResumeRecommandationsPlansActions(
+                request.getResumeRecommandationsPlansActions());
+
+        reunion.setObservationsCommentaires(
+                request.getObservationsCommentaires());
+
+        /* 
+           PARTICIPANTS
+            */
+
         if (request.getParticipants() != null) {
 
             for (ReunionPersonneRequest participantRequest
                     : request.getParticipants()) {
 
                 Personne personne = personneRepository
-                        .findById(participantRequest.getPersonneId())
+                        .findById(
+                                participantRequest.getPersonneId())
                         .orElseThrow(() ->
                                 new RuntimeException(
                                         "Personne introuvable"));
@@ -87,6 +145,7 @@ public class CreateReunionService implements CreateReunionUseCase {
                         new ReunionPersonne();
 
                 participant.setPersonne(personne);
+
                 participant.setRole(
                         participantRequest.getRole());
 
@@ -103,6 +162,16 @@ public class CreateReunionService implements CreateReunionUseCase {
         return toResponse(savedReunion);
     }
 
+    private void validateType(String type) {
+
+        if (!"OUVERTURE".equals(type)
+                && !"CLOTURE".equals(type)) {
+
+            throw new RuntimeException(
+                    "Le type de réunion doit être OUVERTURE ou CLOTURE");
+        }
+    }
+
     private ReunionResponse toResponse(Reunion reunion) {
 
         ReunionResponse response =
@@ -111,6 +180,7 @@ public class CreateReunionService implements CreateReunionUseCase {
         response.setId(reunion.getId());
 
         if (reunion.getMission() != null) {
+
             response.setMissionId(
                     reunion.getMission().getId());
 
@@ -122,13 +192,26 @@ public class CreateReunionService implements CreateReunionUseCase {
         }
 
         response.setType(reunion.getType());
+
         response.setDateReunion(
                 reunion.getDateReunion());
+
         response.setHeureDebut(
                 reunion.getHeureDebut());
+
         response.setHeureFin(
                 reunion.getHeureFin());
-        response.setLieu(reunion.getLieu());
+
+        response.setHeureLevee(
+                reunion.getHeureLevee());
+
+        response.setLieu(
+                reunion.getLieu());
+
+        /* 
+           REUNION D'OUVERTURE
+            */
+
         response.setObservations(
                 reunion.getObservations());
 
@@ -149,6 +232,35 @@ public class CreateReunionService implements CreateReunionUseCase {
 
         response.setPointsInterlocuteursOrganisation(
                 reunion.getPointsInterlocuteursOrganisation());
+
+        /* 
+           REUNION DE CLOTURE
+            */
+
+        response.setRemerciements(
+                reunion.getRemerciements());
+
+        response.setRappelPerimetre(
+                reunion.getRappelPerimetre());
+
+        response.setSyntheseConstats(
+                reunion.getSyntheseConstats());
+
+        response.setPointsFortsIdentifies(
+                reunion.getPointsFortsIdentifies());
+
+        response.setResumeResultatsVerification(
+                reunion.getResumeResultatsVerification());
+
+        response.setResumeRecommandationsPlansActions(
+                reunion.getResumeRecommandationsPlansActions());
+
+        response.setObservationsCommentaires(
+                reunion.getObservationsCommentaires());
+
+        /* 
+           PARTICIPANTS
+            */
 
         List<ReunionPersonneResponse> participants =
                 new ArrayList<>();

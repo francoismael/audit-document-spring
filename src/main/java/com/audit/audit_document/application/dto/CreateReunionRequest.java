@@ -16,7 +16,11 @@ public class CreateReunionRequest {
 
     private LocalTime heureFin;
 
+    private LocalTime heureLevee;
+
     private String lieu;
+
+    /* reunion ouverture */
 
     private String observations;
 
@@ -31,6 +35,22 @@ public class CreateReunionRequest {
     private String pointsInterlocuteursProcessus;
 
     private String pointsInterlocuteursOrganisation;
+
+    /* reunion cloture */
+
+    private String remerciements;
+
+    private String rappelPerimetre;
+
+    private String syntheseConstats;
+
+    private String pointsFortsIdentifies;
+
+    private String resumeResultatsVerification;
+
+    private String resumeRecommandationsPlansActions;
+
+    private String observationsCommentaires;
 
     private List<ReunionPersonneRequest> participants;
 
@@ -77,6 +97,14 @@ public class CreateReunionRequest {
         this.heureFin = heureFin;
     }
 
+    public LocalTime getHeureLevee() {
+        return heureLevee;
+    }
+
+    public void setHeureLevee(LocalTime heureLevee) {
+        this.heureLevee = heureLevee;
+    }
+
     public String getLieu() {
         return lieu;
     }
@@ -97,8 +125,10 @@ public class CreateReunionRequest {
         return pointsDaiIntroduction;
     }
 
-    public void setPointsDaiIntroduction(String pointsDaiIntroduction) {
-        this.pointsDaiIntroduction = pointsDaiIntroduction;
+    public void setPointsDaiIntroduction(
+            String pointsDaiIntroduction) {
+        this.pointsDaiIntroduction =
+                pointsDaiIntroduction;
     }
 
     public String getPointsDaiPresentationMission() {
@@ -115,8 +145,10 @@ public class CreateReunionRequest {
         return pointsDaiMethodologie;
     }
 
-    public void setPointsDaiMethodologie(String pointsDaiMethodologie) {
-        this.pointsDaiMethodologie = pointsDaiMethodologie;
+    public void setPointsDaiMethodologie(
+            String pointsDaiMethodologie) {
+        this.pointsDaiMethodologie =
+                pointsDaiMethodologie;
     }
 
     public String getPointsInterlocuteursIntroduction() {
@@ -147,6 +179,70 @@ public class CreateReunionRequest {
             String pointsInterlocuteursOrganisation) {
         this.pointsInterlocuteursOrganisation =
                 pointsInterlocuteursOrganisation;
+    }
+
+    public String getRemerciements() {
+        return remerciements;
+    }
+
+    public void setRemerciements(String remerciements) {
+        this.remerciements = remerciements;
+    }
+
+    public String getRappelPerimetre() {
+        return rappelPerimetre;
+    }
+
+    public void setRappelPerimetre(String rappelPerimetre) {
+        this.rappelPerimetre = rappelPerimetre;
+    }
+
+    public String getSyntheseConstats() {
+        return syntheseConstats;
+    }
+
+    public void setSyntheseConstats(String syntheseConstats) {
+        this.syntheseConstats = syntheseConstats;
+    }
+
+    public String getPointsFortsIdentifies() {
+        return pointsFortsIdentifies;
+    }
+
+    public void setPointsFortsIdentifies(
+            String pointsFortsIdentifies) {
+        this.pointsFortsIdentifies =
+                pointsFortsIdentifies;
+    }
+
+    public String getResumeResultatsVerification() {
+        return resumeResultatsVerification;
+    }
+
+    public void setResumeResultatsVerification(
+            String resumeResultatsVerification) {
+        this.resumeResultatsVerification =
+                resumeResultatsVerification;
+    }
+
+    public String getResumeRecommandationsPlansActions() {
+        return resumeRecommandationsPlansActions;
+    }
+
+    public void setResumeRecommandationsPlansActions(
+            String resumeRecommandationsPlansActions) {
+        this.resumeRecommandationsPlansActions =
+                resumeRecommandationsPlansActions;
+    }
+
+    public String getObservationsCommentaires() {
+        return observationsCommentaires;
+    }
+
+    public void setObservationsCommentaires(
+            String observationsCommentaires) {
+        this.observationsCommentaires =
+                observationsCommentaires;
     }
 
     public List<ReunionPersonneRequest> getParticipants() {

@@ -30,29 +30,104 @@ public class Reunion {
     @Column(name = "heure_fin")
     private LocalTime heureFin;
 
+    @Column(name = "heure_levee")
+    private LocalTime heureLevee;
+
     @Column(length = 255)
     private String lieu;
+
+    /* =========================
+       REUNION D'OUVERTURE
+       ========================= */
 
     @Column(columnDefinition = "TEXT")
     private String observations;
 
-    @Column(name = "points_dai_introduction", columnDefinition = "TEXT")
+    @Column(
+        name = "points_dai_introduction",
+        columnDefinition = "TEXT"
+    )
     private String pointsDaiIntroduction;
 
-    @Column(name = "points_dai_presentation_mission", columnDefinition = "TEXT")
+    @Column(
+        name = "points_dai_presentation_mission",
+        columnDefinition = "TEXT"
+    )
     private String pointsDaiPresentationMission;
 
-    @Column(name = "points_dai_methodologie", columnDefinition = "TEXT")
+    @Column(
+        name = "points_dai_methodologie",
+        columnDefinition = "TEXT"
+    )
     private String pointsDaiMethodologie;
 
-    @Column(name = "points_interlocuteurs_introduction", columnDefinition = "TEXT")
+    @Column(
+        name = "points_interlocuteurs_introduction",
+        columnDefinition = "TEXT"
+    )
     private String pointsInterlocuteursIntroduction;
 
-    @Column(name = "points_interlocuteurs_processus", columnDefinition = "TEXT")
+    @Column(
+        name = "points_interlocuteurs_processus",
+        columnDefinition = "TEXT"
+    )
     private String pointsInterlocuteursProcessus;
 
-    @Column(name = "points_interlocuteurs_organisation", columnDefinition = "TEXT")
+    @Column(
+        name = "points_interlocuteurs_organisation",
+        columnDefinition = "TEXT"
+    )
     private String pointsInterlocuteursOrganisation;
+
+    /* =========================
+       REUNION DE CLOTURE
+       ========================= */
+
+    @Column(
+        name = "remerciements",
+        columnDefinition = "TEXT"
+    )
+    private String remerciements;
+
+    @Column(
+        name = "rappel_perimetre",
+        columnDefinition = "TEXT"
+    )
+    private String rappelPerimetre;
+
+    @Column(
+        name = "synthese_constats",
+        columnDefinition = "TEXT"
+    )
+    private String syntheseConstats;
+
+    @Column(
+        name = "points_forts_identifies",
+        columnDefinition = "TEXT"
+    )
+    private String pointsFortsIdentifies;
+
+    @Column(
+        name = "resume_resultats_verification",
+        columnDefinition = "TEXT"
+    )
+    private String resumeResultatsVerification;
+
+    @Column(
+        name = "resume_recommandations_plans_actions",
+        columnDefinition = "TEXT"
+    )
+    private String resumeRecommandationsPlansActions;
+
+    @Column(
+        name = "observations_commentaires",
+        columnDefinition = "TEXT"
+    )
+    private String observationsCommentaires;
+
+    /* =========================
+       PARTICIPANTS
+       ========================= */
 
     @OneToMany(
         mappedBy = "reunion",
@@ -68,16 +143,16 @@ public class Reunion {
         return id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public Mission getMission() {
         return mission;
     }
 
     public void setMission(Mission mission) {
         this.mission = mission;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getType() {
@@ -112,6 +187,14 @@ public class Reunion {
         this.heureFin = heureFin;
     }
 
+    public LocalTime getHeureLevee() {
+        return heureLevee;
+    }
+
+    public void setHeureLevee(LocalTime heureLevee) {
+        this.heureLevee = heureLevee;
+    }
+
     public String getLieu() {
         return lieu;
     }
@@ -140,8 +223,10 @@ public class Reunion {
         return pointsDaiPresentationMission;
     }
 
-    public void setPointsDaiPresentationMission(String pointsDaiPresentationMission) {
-        this.pointsDaiPresentationMission = pointsDaiPresentationMission;
+    public void setPointsDaiPresentationMission(
+            String pointsDaiPresentationMission) {
+        this.pointsDaiPresentationMission =
+                pointsDaiPresentationMission;
     }
 
     public String getPointsDaiMethodologie() {
@@ -156,31 +241,100 @@ public class Reunion {
         return pointsInterlocuteursIntroduction;
     }
 
-    public void setPointsInterlocuteursIntroduction(String pointsInterlocuteursIntroduction) {
-        this.pointsInterlocuteursIntroduction = pointsInterlocuteursIntroduction;
+    public void setPointsInterlocuteursIntroduction(
+            String pointsInterlocuteursIntroduction) {
+        this.pointsInterlocuteursIntroduction =
+                pointsInterlocuteursIntroduction;
     }
 
     public String getPointsInterlocuteursProcessus() {
         return pointsInterlocuteursProcessus;
     }
 
-    public void setPointsInterlocuteursProcessus(String pointsInterlocuteursProcessus) {
-        this.pointsInterlocuteursProcessus = pointsInterlocuteursProcessus;
+    public void setPointsInterlocuteursProcessus(
+            String pointsInterlocuteursProcessus) {
+        this.pointsInterlocuteursProcessus =
+                pointsInterlocuteursProcessus;
     }
 
     public String getPointsInterlocuteursOrganisation() {
         return pointsInterlocuteursOrganisation;
     }
 
-    public void setPointsInterlocuteursOrganisation(String pointsInterlocuteursOrganisation) {
-        this.pointsInterlocuteursOrganisation = pointsInterlocuteursOrganisation;
+    public void setPointsInterlocuteursOrganisation(
+            String pointsInterlocuteursOrganisation) {
+        this.pointsInterlocuteursOrganisation =
+                pointsInterlocuteursOrganisation;
+    }
+
+    public String getRemerciements() {
+        return remerciements;
+    }
+
+    public void setRemerciements(String remerciements) {
+        this.remerciements = remerciements;
+    }
+
+    public String getRappelPerimetre() {
+        return rappelPerimetre;
+    }
+
+    public void setRappelPerimetre(String rappelPerimetre) {
+        this.rappelPerimetre = rappelPerimetre;
+    }
+
+    public String getSyntheseConstats() {
+        return syntheseConstats;
+    }
+
+    public void setSyntheseConstats(String syntheseConstats) {
+        this.syntheseConstats = syntheseConstats;
+    }
+
+    public String getPointsFortsIdentifies() {
+        return pointsFortsIdentifies;
+    }
+
+    public void setPointsFortsIdentifies(String pointsFortsIdentifies) {
+        this.pointsFortsIdentifies = pointsFortsIdentifies;
+    }
+
+    public String getResumeResultatsVerification() {
+        return resumeResultatsVerification;
+    }
+
+    public void setResumeResultatsVerification(
+            String resumeResultatsVerification) {
+        this.resumeResultatsVerification =
+                resumeResultatsVerification;
+    }
+
+    public String getResumeRecommandationsPlansActions() {
+        return resumeRecommandationsPlansActions;
+    }
+
+    public void setResumeRecommandationsPlansActions(
+            String resumeRecommandationsPlansActions) {
+        this.resumeRecommandationsPlansActions =
+                resumeRecommandationsPlansActions;
+    }
+
+    public String getObservationsCommentaires() {
+        return observationsCommentaires;
+    }
+
+    public void setObservationsCommentaires(
+            String observationsCommentaires) {
+        this.observationsCommentaires =
+                observationsCommentaires;
     }
 
     public List<ReunionPersonne> getParticipants() {
         return participants;
     }
 
-    public void setParticipants(List<ReunionPersonne> participants) {
+    public void setParticipants(
+            List<ReunionPersonne> participants) {
         this.participants = participants;
     }
 

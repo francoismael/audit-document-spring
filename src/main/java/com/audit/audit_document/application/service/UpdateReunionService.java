@@ -13,6 +13,7 @@ import com.audit.audit_document.domain.repository.MissionRepository;
 import com.audit.audit_document.domain.repository.PersonneRepository;
 import com.audit.audit_document.domain.repository.ReunionPersonneRepository;
 import com.audit.audit_document.domain.repository.ReunionRepository;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +48,8 @@ public class UpdateReunionService
             Long id,
             CreateReunionRequest request) {
 
+        validateType(request.getType());
+
         Reunion reunion = reunionRepository
                 .findById(id)
                 .orElseThrow(() ->
@@ -59,15 +62,50 @@ public class UpdateReunionService
                         new RuntimeException(
                                 "Mission introuvable"));
 
+        boolean reunionExiste = reunionRepository
+                .findAll()
+                .stream()
+                .anyMatch(existingReunion ->
+                        !existingReunion.getId().equals(id)
+                                && existingReunion.getMission() != null
+                                && existingReunion.getMission()
+                                .getId()
+                                .equals(mission.getId())
+                                && existingReunion.getType() != null
+                                && existingReunion.getType()
+                                .equals(request.getType()));
+
+        if (reunionExiste) {
+            throw new RuntimeException(
+                    "Une réunion de type "
+                            + request.getType()
+                            + " existe déjà pour cette mission");
+        }
+
         reunion.setMission(mission);
-        reunion.setType(request.getType());
+
+        reunion.setType(
+                request.getType());
+
         reunion.setDateReunion(
                 request.getDateReunion());
+
         reunion.setHeureDebut(
                 request.getHeureDebut());
+
         reunion.setHeureFin(
                 request.getHeureFin());
-        reunion.setLieu(request.getLieu());
+
+        reunion.setHeureLevee(
+                request.getHeureLevee());
+
+        reunion.setLieu(
+                request.getLieu());
+
+        /*
+           REUNION D'OUVERTURE
+         */
+
         reunion.setObservations(
                 request.getObservations());
 
@@ -89,8 +127,38 @@ public class UpdateReunionService
         reunion.setPointsInterlocuteursOrganisation(
                 request.getPointsInterlocuteursOrganisation());
 
-        // Remove existing participants before recreating them.
-        reunionPersonneRepository.deleteByReunionId(id);
+        /*
+           REUNION DE CLOTURE
+         */
+
+        reunion.setRemerciements(
+                request.getRemerciements());
+
+        reunion.setRappelPerimetre(
+                request.getRappelPerimetre());
+
+        reunion.setSyntheseConstats(
+                request.getSyntheseConstats());
+
+        reunion.setPointsFortsIdentifies(
+                request.getPointsFortsIdentifies());
+
+        reunion.setResumeResultatsVerification(
+                request.getResumeResultatsVerification());
+
+        reunion.setResumeRecommandationsPlansActions(
+                request.getResumeRecommandationsPlansActions());
+
+        reunion.setObservationsCommentaires(
+                request.getObservationsCommentaires());
+
+        /*
+           PARTICIPANTS
+         */
+
+        reunionPersonneRepository
+                .deleteByReunionId(id);
+
         reunionPersonneRepository.flush();
 
         reunion.getParticipants().clear();
@@ -121,7 +189,8 @@ public class UpdateReunionService
                         participantRequest
                                 .getTypeParticipant());
 
-                reunion.addParticipant(participant);
+                reunion.addParticipant(
+                        participant);
             }
         }
 
@@ -131,13 +200,28 @@ public class UpdateReunionService
         return toResponse(savedReunion);
     }
 
+    private void validateType(String type) {
+
+        if (!"OUVERTURE".equals(type)
+                && !"CLOTURE".equals(type)) {
+
+            throw new RuntimeException(
+                    "Le type de réunion doit être OUVERTURE ou CLOTURE");
+        }
+    }
+
     private ReunionResponse toResponse(
             Reunion reunion) {
 
         ReunionResponse response =
                 new ReunionResponse();
 
-        response.setId(reunion.getId());
+        response.setId(
+                reunion.getId());
+
+        /*
+           MISSION
+         */
 
         if (reunion.getMission() != null) {
 
@@ -151,14 +235,32 @@ public class UpdateReunionService
                     reunion.getMission().getIntitule());
         }
 
-        response.setType(reunion.getType());
+        /*
+           INFORMATIONS REUNION
+         */
+
+        response.setType(
+                reunion.getType());
+
         response.setDateReunion(
                 reunion.getDateReunion());
+
         response.setHeureDebut(
                 reunion.getHeureDebut());
+
         response.setHeureFin(
                 reunion.getHeureFin());
-        response.setLieu(reunion.getLieu());
+
+        response.setHeureLevee(
+                reunion.getHeureLevee());
+
+        response.setLieu(
+                reunion.getLieu());
+
+        /*
+           REUNION D'OUVERTURE
+         */
+
         response.setObservations(
                 reunion.getObservations());
 
@@ -179,6 +281,35 @@ public class UpdateReunionService
 
         response.setPointsInterlocuteursOrganisation(
                 reunion.getPointsInterlocuteursOrganisation());
+
+        /*
+           REUNION DE CLOTURE
+         */
+
+        response.setRemerciements(
+                reunion.getRemerciements());
+
+        response.setRappelPerimetre(
+                reunion.getRappelPerimetre());
+
+        response.setSyntheseConstats(
+                reunion.getSyntheseConstats());
+
+        response.setPointsFortsIdentifies(
+                reunion.getPointsFortsIdentifies());
+
+        response.setResumeResultatsVerification(
+                reunion.getResumeResultatsVerification());
+
+        response.setResumeRecommandationsPlansActions(
+                reunion.getResumeRecommandationsPlansActions());
+
+        response.setObservationsCommentaires(
+                reunion.getObservationsCommentaires());
+
+        /*
+           PARTICIPANTS
+         */
 
         List<ReunionPersonneResponse> participants =
                 new ArrayList<>();
@@ -222,10 +353,12 @@ public class UpdateReunionService
             participantResponse.setTypeParticipant(
                     participant.getTypeParticipant());
 
-            participants.add(participantResponse);
+            participants.add(
+                    participantResponse);
         }
 
-        response.setParticipants(participants);
+        response.setParticipants(
+                participants);
 
         return response;
     }

@@ -7,6 +7,7 @@ import com.audit.audit_document.domain.entity.Personne;
 import com.audit.audit_document.domain.entity.Reunion;
 import com.audit.audit_document.domain.entity.ReunionPersonne;
 import com.audit.audit_document.domain.repository.ReunionRepository;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,12 +39,17 @@ public class GetReunionByIdService
         return toResponse(reunion);
     }
 
-    private ReunionResponse toResponse(Reunion reunion) {
+    private ReunionResponse toResponse(
+            Reunion reunion) {
 
         ReunionResponse response =
                 new ReunionResponse();
 
         response.setId(reunion.getId());
+
+        /*
+           MISSION
+         */
 
         if (reunion.getMission() != null) {
 
@@ -57,14 +63,32 @@ public class GetReunionByIdService
                     reunion.getMission().getIntitule());
         }
 
-        response.setType(reunion.getType());
+        /*
+           INFORMATIONS REUNION
+         */
+
+        response.setType(
+                reunion.getType());
+
         response.setDateReunion(
                 reunion.getDateReunion());
+
         response.setHeureDebut(
                 reunion.getHeureDebut());
+
         response.setHeureFin(
                 reunion.getHeureFin());
-        response.setLieu(reunion.getLieu());
+
+        response.setHeureLevee(
+                reunion.getHeureLevee());
+
+        response.setLieu(
+                reunion.getLieu());
+
+        /*
+           REUNION D'OUVERTURE
+         */
+
         response.setObservations(
                 reunion.getObservations());
 
@@ -85,6 +109,35 @@ public class GetReunionByIdService
 
         response.setPointsInterlocuteursOrganisation(
                 reunion.getPointsInterlocuteursOrganisation());
+
+        /*
+           REUNION DE CLOTURE
+         */
+
+        response.setRemerciements(
+                reunion.getRemerciements());
+
+        response.setRappelPerimetre(
+                reunion.getRappelPerimetre());
+
+        response.setSyntheseConstats(
+                reunion.getSyntheseConstats());
+
+        response.setPointsFortsIdentifies(
+                reunion.getPointsFortsIdentifies());
+
+        response.setResumeResultatsVerification(
+                reunion.getResumeResultatsVerification());
+
+        response.setResumeRecommandationsPlansActions(
+                reunion.getResumeRecommandationsPlansActions());
+
+        response.setObservationsCommentaires(
+                reunion.getObservationsCommentaires());
+
+        /*
+           PARTICIPANTS
+         */
 
         List<ReunionPersonneResponse> participants =
                 new ArrayList<>();

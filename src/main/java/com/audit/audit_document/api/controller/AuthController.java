@@ -4,7 +4,6 @@ import com.audit.audit_document.application.dto.LoginRequest;
 import com.audit.audit_document.application.dto.LoginResponse;
 import com.audit.audit_document.application.usecases.LoginUseCase;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,19 +17,12 @@ public class AuthController {
         this.loginUseCase = loginUseCase;
     }
 
+    // Login failures are turned into a 401 JSON error by GlobalExceptionHandler.
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
 
-    try {
         return ResponseEntity.ok(
                 loginUseCase.execute(request)
         );
-
-    } catch (RuntimeException e) {
-
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(e.getMessage());
-    }
     }
 }

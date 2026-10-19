@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.dto.InterviewQuestionResponse;
 import com.audit.audit_document.application.dto.InterviewResponse;
 import com.audit.audit_document.application.usecases.GetInterviewByIdUseCase;
@@ -28,7 +29,7 @@ public class GetInterviewByIdService implements GetInterviewByIdUseCase {
 
         Interview interview = interviewRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("Interview introuvable"));
+                        new ResourceNotFoundException("Interview introuvable"));
 
         InterviewResponse response = new InterviewResponse();
 

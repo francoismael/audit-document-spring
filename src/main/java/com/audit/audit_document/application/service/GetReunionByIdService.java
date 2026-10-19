@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.dto.ReunionPersonneResponse;
 import com.audit.audit_document.application.dto.ReunionResponse;
 import com.audit.audit_document.application.usecases.GetReunionByIdUseCase;
@@ -33,7 +34,7 @@ public class GetReunionByIdService
         Reunion reunion = reunionRepository
                 .findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Réunion introuvable"));
 
         return toResponse(reunion);

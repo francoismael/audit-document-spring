@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.dto.MissionPersonneResponse;
 import com.audit.audit_document.application.dto.MissionResponse;
 import com.audit.audit_document.application.usecases.GetByIdMissionUseCase;
@@ -31,7 +32,7 @@ public class GetByIdMissionService implements GetByIdMissionUseCase {
 
         Mission mission = missionRepository
                 .findById(missionId)
-                .orElseThrow(() -> new RuntimeException(
+                .orElseThrow(() -> new ResourceNotFoundException(
                         "Mission introuvable : " + missionId
                 ));
 

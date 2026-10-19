@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.dto.CreateDeclarationIndependanceRequest;
 import com.audit.audit_document.application.dto.DeclarationIndependanceResponse;
 import com.audit.audit_document.application.usecases.CreateDeclarationIndependanceUseCase;
@@ -38,7 +39,7 @@ public class CreateDeclarationIndependanceService
     Mission mission = missionRepository
             .findById(request.getMissionId())
             .orElseThrow(() ->
-                    new RuntimeException(
+                    new ResourceNotFoundException(
                             "Mission introuvable : "
                                     + request.getMissionId()
                     )
@@ -47,7 +48,7 @@ public class CreateDeclarationIndependanceService
     Personne personne = personneRepository
             .findById(request.getPersonneId())
             .orElseThrow(() ->
-                    new RuntimeException(
+                    new ResourceNotFoundException(
                             "Personne introuvable : "
                                     + request.getPersonneId()
                     )

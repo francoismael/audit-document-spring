@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.dto.DeclarationIndependanceResponse;
 import com.audit.audit_document.application.usecases.GetByIdDeclarationIndependanceUseCase;
 import com.audit.audit_document.domain.entity.DeclarationIndependance;
@@ -26,7 +27,7 @@ public class GetDeclarationIndependanceService
         DeclarationIndependance declaration =
                 declarationRepository.findById(id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Déclaration d'indépendance introuvable : "
                                                 + id
                                 )

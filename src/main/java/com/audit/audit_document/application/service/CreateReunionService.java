@@ -1,5 +1,7 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ConflictException;
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.dto.CreateReunionRequest;
 import com.audit.audit_document.application.dto.ReunionPersonneRequest;
 import com.audit.audit_document.application.dto.ReunionPersonneResponse;
@@ -44,7 +46,7 @@ public class CreateReunionService implements CreateReunionUseCase {
         Mission mission = missionRepository
                 .findById(request.getMissionId())
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Mission introuvable"));
 
         boolean reunionExiste = reunionRepository
@@ -59,7 +61,7 @@ public class CreateReunionService implements CreateReunionUseCase {
                                 .equals(request.getType()));
 
         if (reunionExiste) {
-            throw new RuntimeException(
+            throw new ConflictException(
                     "Une réunion de type "
                             + request.getType()
                             + " existe déjà pour cette mission");
@@ -138,7 +140,7 @@ public class CreateReunionService implements CreateReunionUseCase {
                         .findById(
                                 participantRequest.getPersonneId())
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Personne introuvable"));
 
                 ReunionPersonne participant =
@@ -167,7 +169,7 @@ public class CreateReunionService implements CreateReunionUseCase {
         if (!"OUVERTURE".equals(type)
                 && !"CLOTURE".equals(type)) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Le type de réunion doit être OUVERTURE ou CLOTURE");
         }
     }

@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.dto.ObjectifResponse;
 import com.audit.audit_document.application.dto.TdrResponse;
 import com.audit.audit_document.application.usecases.GetTdrByIdUseCase;
@@ -33,7 +34,7 @@ public class GetTdrByIdService
         Tdr tdr =
                 tdrRepository.findById(id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "TDR introuvable : " + id));
 
         return buildResponse(tdr);
@@ -100,7 +101,7 @@ public class GetTdrByIdService
         response.setLivrables(
                 tdr.getLivrables());
 
-        // Objectifs
+        // Objectives
         List<ObjectifResponse> objectifResponses =
                 new ArrayList<>();
 

@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ConflictException;
 import com.audit.audit_document.application.dto.CreateUtilisateurRequest;
 import com.audit.audit_document.application.dto.UtilisateurResponse;
 import com.audit.audit_document.application.usecases.CreateUtilisateurUseCase;
@@ -28,11 +29,11 @@ public class CreateUtilisateurService implements CreateUtilisateurUseCase {
     public UtilisateurResponse execute(CreateUtilisateurRequest request) {
 
         if (utilisateurRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new RuntimeException("Username already exists");
+            throw new ConflictException("Ce nom d'utilisateur existe déjà");
         }
 
         if (utilisateurRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new ConflictException("Cette adresse e-mail existe déjà");
         }
 
         Utilisateur utilisateur = new Utilisateur();

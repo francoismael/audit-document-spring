@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.usecases.GetPersonneByIdUseCase;
 import com.audit.audit_document.domain.entity.Personne;
 import com.audit.audit_document.domain.repository.PersonneRepository;
@@ -20,7 +21,7 @@ public class GetPersonneByIdService implements GetPersonneByIdUseCase {
 
         return personneRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("Personne introuvable avec l'id : " + id)
+                        new ResourceNotFoundException("Personne introuvable avec l'id : " + id)
                 );
     }
 }

@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.dto.UpdatePersonneRequest;
 import com.audit.audit_document.application.usecases.UpdatePersonneUseCase;
 import com.audit.audit_document.domain.entity.Personne;
@@ -21,7 +22,7 @@ public class UpdatePersonneService implements UpdatePersonneUseCase {
 
         Personne personne = personneRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Personne introuvable avec l'id : " + id
                         )
                 );

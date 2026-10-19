@@ -51,7 +51,6 @@ public class ProgrammeTravailController {
                 .body(response);
     }
 
-
     @GetMapping("/{id}")
     public ResponseEntity<ProgrammeTravailResponse> getById(
             @PathVariable Long id) {
@@ -61,7 +60,6 @@ public class ProgrammeTravailController {
 
         return ResponseEntity.ok(response);
     }
-
 
     @GetMapping
     public ResponseEntity<List<ProgrammeTravailResponse>> getAll() {
@@ -84,7 +82,6 @@ public class ProgrammeTravailController {
         return ResponseEntity.ok(response);
     }
 
-    // DELETE
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @PathVariable Long id) {

@@ -1,5 +1,7 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ConflictException;
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.dto.CreateTdrRequest;
 import com.audit.audit_document.application.dto.ObjectifRequest;
 import com.audit.audit_document.application.dto.ObjectifResponse;
@@ -43,28 +45,28 @@ public class CreateTdrService
     public TdrResponse execute(CreateTdrRequest request) {
 
         /*
-         * 1. Vérifier que la mission existe
+         * 1. Check that the mission exists
          */
         Mission mission =
                 missionRepository.findById(request.getMissionId())
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Mission introuvable : "
                                         + request.getMissionId()));
 
         /*
-         * 2. Vérifier qu'un TDR n'existe pas déjà
-         *    pour cette mission
+         * 2. Check that a TDR does not already exist
+         *    for this mission
          */
         if (tdrRepository.existsByMissionId(
                 request.getMissionId())) {
 
-            throw new RuntimeException(
+            throw new ConflictException(
                     "Un TDR existe déjà pour cette mission.");
         }
 
         /*
-         * 3. Créer le TDR
+         * 3. Create the TDR
          */
         Tdr tdr = new Tdr();
 
@@ -95,19 +97,19 @@ public class CreateTdrService
                 request.getLivrables());
 
         /*
-         * 4. Sauvegarder le TDR
+         * 4. Save the TDR
          *
-         * Cette sauvegarde permet à PostgreSQL
-         * de générer l'ID du TDR.
+         * This save lets PostgreSQL
+         * generate the TDR ID.
          */
         Tdr savedTdr =
                 tdrRepository.save(tdr);
 
         /*
-         * 5. Créer les objectifs
+         * 5. Create the objectives
          *
-         * Le numéro est généré automatiquement
-         * pour chaque objectif de ce TDR.
+         * The number is generated automatically
+         * for each objective of this TDR.
          */
         if (request.getObjectifs() != null) {
 
@@ -115,15 +117,15 @@ public class CreateTdrService
                     request.getObjectifs()) {
 
                 /*
-                 * Récupérer le prochain numéro
-                 * disponible pour ce TDR.
+                 * Get the next number
+                 * available for this TDR.
                  */
                 Integer nextNumero =
                         objectifRepository.getNextNumero(
                                 savedTdr.getId());
 
                 /*
-                 * Exemple :
+                 * Example:
                  * 1 → OBJ-01
                  * 2 → OBJ-02
                  * 3 → OBJ-03
@@ -142,30 +144,30 @@ public class CreateTdrService
                         objectifRequest.getDescriptions());
 
                 /*
-                 * Définit automatiquement
-                 * la relation objectif → TDR.
+                 * Automatically sets
+                 * the objective → TDR relation.
                  */
                 savedTdr.addObjectif(objectif);
             }
         }
 
         /*
-         * 6. Sauvegarder à nouveau le TDR
+         * 6. Save the TDR again
          *
-         * Grâce à CascadeType.ALL dans Tdr,
-         * les objectifs sont également sauvegardés.
+         * Thanks to CascadeType.ALL in Tdr,
+         * the objectives are saved as well.
          */
         savedTdr =
                 tdrRepository.save(savedTdr);
 
         /*
-         * 7. Construire et retourner la réponse
+         * 7. Build and return the response
          */
         return buildResponse(savedTdr);
     }
 
     /*
-     * Construction de la réponse
+     * Build the response
      */
     private TdrResponse buildResponse(Tdr tdr) {
 
@@ -179,8 +181,8 @@ public class CreateTdrService
                 tdr.getMission();
 
         /*
-         * Informations récupérées automatiquement
-         * depuis la mission.
+         * Information retrieved automatically
+         * from the mission.
          */
         if (mission != null) {
 
@@ -197,8 +199,8 @@ public class CreateTdrService
                     mission.getObjet());
 
             /*
-             * Informations de la structure
-             * récupérées depuis la mission.
+             * Structure information
+             * retrieved from the mission.
              */
             if (mission.getStructure() != null) {
 
@@ -211,7 +213,7 @@ public class CreateTdrService
         }
 
         /*
-         * Informations propres au TDR
+         * TDR-specific information
          */
         response.setContexte(
                 tdr.getContexte());
@@ -238,7 +240,7 @@ public class CreateTdrService
                 tdr.getLivrables());
 
         /*
-         * Conversion des objectifs
+         * Convert the objectives
          * Entity → Response DTO
          */
         List<ObjectifResponse> objectifs =

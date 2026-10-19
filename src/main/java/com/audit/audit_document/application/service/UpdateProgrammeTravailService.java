@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.dto.CreateProgrammeTravailRequest;
 import com.audit.audit_document.application.dto.LigneProgrammeRequest;
 import com.audit.audit_document.application.dto.LigneProgrammeResponse;
@@ -48,7 +49,7 @@ public class UpdateProgrammeTravailService
         ProgrammeTravail programme =
                 programmeRepository.findById(id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Programme de travail introuvable"
                                 )
                         );
@@ -58,7 +59,7 @@ public class UpdateProgrammeTravailService
         if (request.getMissionId() != null &&
                 !request.getMissionId().equals(mission.getId())) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "La mission d'un programme de travail ne peut pas être modifiée"
             );
         }
@@ -86,7 +87,7 @@ public class UpdateProgrammeTravailService
                             )
                             .findFirst()
                             .orElseThrow(() ->
-                                    new RuntimeException(
+                                    new IllegalArgumentException(
                                             "La ligne du programme avec l'id "
                                                     + ligneRequest.getId()
                                                     + " n'appartient pas à ce programme"
@@ -122,15 +123,15 @@ public class UpdateProgrammeTravailService
         }
 
         /*
-         * Supprime les anciennes lignes qui
-         * ne sont plus présentes dans la requête.
+         * Delete the previous lines that
+         * are no longer present in the request.
          */
         for (LigneProgramme existing : existingLines) {
 
     if (!requestLineIds.contains(existing.getId())) {
         ligneRepository.deleteById(existing.getId());
-    }
-}
+         }
+    }   
 
         return buildResponse(programme);
     }
@@ -140,7 +141,7 @@ public class UpdateProgrammeTravailService
             Mission mission) {
 
         if (objectifId == null) {
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "L'objectif est obligatoire"
             );
         }
@@ -148,7 +149,7 @@ public class UpdateProgrammeTravailService
         Objectif objectif =
                 objectifRepository.findById(objectifId)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Objectif introuvable"
                                 )
                         );
@@ -160,7 +161,7 @@ public class UpdateProgrammeTravailService
                 !tdr.getMission().getId()
                         .equals(mission.getId())) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "L'objectif n'appartient pas au TDR de cette mission"
             );
         }

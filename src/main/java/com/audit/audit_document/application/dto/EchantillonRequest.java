@@ -4,7 +4,6 @@ public class EchantillonRequest {
 
     private Long id;
 
-
     private Boolean anomalieDetectee;
 
     private String observation;
@@ -19,6 +18,7 @@ public class EchantillonRequest {
     public void setId(Long id) {
         this.id = id;
     }
+
 
     public Boolean getAnomalieDetectee() {
         return anomalieDetectee;

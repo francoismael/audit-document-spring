@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.dto.UtilisateurResponse;
 import com.audit.audit_document.application.usecases.GetUtilisateurByIdUseCase;
 import com.audit.audit_document.domain.entity.Utilisateur;
@@ -22,7 +23,7 @@ public class GetUtilisateurByIdService implements GetUtilisateurByIdUseCase {
 
         Utilisateur utilisateur = utilisateurRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("Utilisateur not found")
+                        new ResourceNotFoundException("Utilisateur introuvable")
                 );
 
         return new UtilisateurResponse(

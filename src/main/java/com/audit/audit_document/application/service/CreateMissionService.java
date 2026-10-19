@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.audit.audit_document.application.dto.CreateMissionRequest;
@@ -7,6 +8,7 @@ import com.audit.audit_document.application.dto.MissionPersonneRequest;
 import com.audit.audit_document.application.usecases.CreateMissionUseCase;
 import com.audit.audit_document.domain.entity.Mission;
 import com.audit.audit_document.domain.entity.MissionPersonne;
+import com.audit.audit_document.domain.entity.MissionRole;
 import com.audit.audit_document.domain.entity.Personne;
 import com.audit.audit_document.domain.entity.Structure;
 import com.audit.audit_document.domain.repository.MissionPersonneRepository;
@@ -44,7 +46,7 @@ public class CreateMissionService implements CreateMissionUseCase {
         Structure structure = structureRepository
                 .findById(request.getStructureId())
                 .orElseThrow(() ->
-                        new RuntimeException("Structure introuvable"));
+                        new ResourceNotFoundException("Structure introuvable"));
 
         // Create mission
         Mission mission = new Mission();
@@ -73,7 +75,7 @@ public class CreateMissionService implements CreateMissionUseCase {
                 Personne personne = personneRepository
                         .findById(personneRequest.getPersonneId())
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Personne introuvable : "
                                         + personneRequest.getPersonneId()));
 
@@ -82,7 +84,8 @@ public class CreateMissionService implements CreateMissionUseCase {
 
                 missionPersonne.setMission(missionSaved);
                 missionPersonne.setPersonne(personne);
-                missionPersonne.setRoles(personneRequest.getRoles());
+                missionPersonne.setRoles(
+                        MissionRole.fromValue(personneRequest.getRoles()).name());
 
                 missionPersonneRepository.save(missionPersonne);
             }

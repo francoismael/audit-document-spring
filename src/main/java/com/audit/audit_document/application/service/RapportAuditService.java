@@ -1,5 +1,7 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ConflictException;
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.dto.CreateRapportAuditRequest;
 import com.audit.audit_document.application.dto.RapportAuditResponse;
 import com.audit.audit_document.application.usecases.CreateRapportAuditUseCase;
@@ -54,7 +56,7 @@ public class RapportAuditService
         Mission mission = missionRepository
                 .findById(request.getMissionId())
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
+                        new ResourceNotFoundException(
                                 "Mission introuvable avec l'id : "
                                         + request.getMissionId()
                         )
@@ -64,7 +66,7 @@ public class RapportAuditService
                 .findByMissionId(mission.getId())
                 .isPresent()) {
 
-            throw new IllegalArgumentException(
+            throw new ConflictException(
                     "Un rapport d'audit existe déjà pour cette mission."
             );
         }
@@ -108,11 +110,11 @@ public class RapportAuditService
         RapportAudit saved =
                 rapportAuditRepository.save(rapport);
 
-        return convertirEnResponse(saved);
+        return toResponse(saved);
     }
 
     // ============================================================
-    // GET PAR MISSION
+    // GET BY MISSION
     // ============================================================
 
     @Override
@@ -130,14 +132,14 @@ public class RapportAuditService
                 rapportAuditRepository
                         .findByMissionId(missionId)
                         .orElseThrow(() ->
-                                new IllegalArgumentException(
+                                new ResourceNotFoundException(
                                         "Rapport d'audit introuvable "
                                                 + "pour la mission : "
                                                 + missionId
                                 )
                         );
 
-        return convertirEnResponse(rapport);
+        return toResponse(rapport);
     }
 
     // ============================================================
@@ -165,7 +167,7 @@ public class RapportAuditService
                 rapportAuditRepository
                         .findById(id)
                         .orElseThrow(() ->
-                                new IllegalArgumentException(
+                                new ResourceNotFoundException(
                                         "Rapport d'audit introuvable "
                                                 + "avec l'id : "
                                                 + id
@@ -183,7 +185,6 @@ public class RapportAuditService
             );
         }
 
-        
         rapport.setMotifs(
                 request.getMotifs()
         );
@@ -192,7 +193,6 @@ public class RapportAuditService
                 request.getNature()
         );
 
-        
         if (request.getVersionRapport() != null) {
 
             rapport.setVersionRapport(
@@ -219,12 +219,10 @@ public class RapportAuditService
         RapportAudit updated =
                 rapportAuditRepository.save(rapport);
 
-        return convertirEnResponse(updated);
+        return toResponse(updated);
     }
 
-
-
-    private RapportAuditResponse convertirEnResponse(
+    private RapportAuditResponse toResponse(
             RapportAudit rapport) {
 
         Mission mission = rapport.getMission();

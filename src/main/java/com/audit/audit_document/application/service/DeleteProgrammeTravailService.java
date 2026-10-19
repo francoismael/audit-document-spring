@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.usecases.DeleteProgrammeTravailUseCase;
 import com.audit.audit_document.domain.repository.ProgrammeTravailRepository;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,7 @@ public class DeleteProgrammeTravailService
 
         if (!programmeRepository.findById(id).isPresent()) {
 
-            throw new RuntimeException(
+            throw new ResourceNotFoundException(
                     "Programme de travail introuvable"
             );
         }

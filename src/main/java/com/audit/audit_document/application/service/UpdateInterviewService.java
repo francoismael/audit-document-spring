@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.dto.CreateInterviewRequest;
 import com.audit.audit_document.application.dto.InterviewQuestionRequest;
 import com.audit.audit_document.application.dto.InterviewQuestionResponse;
@@ -46,19 +47,19 @@ public class UpdateInterviewService implements UpdateInterviewUseCase {
         // Find the existing interview
         Interview interview = interviewRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException("Interview introuvable"));
+                        new ResourceNotFoundException("Interview introuvable"));
 
         // Find the mission
         Mission mission = missionRepository.findById(request.getMissionId())
                 .orElseThrow(() ->
-                        new RuntimeException("Mission introuvable"));
+                        new ResourceNotFoundException("Mission introuvable"));
 
         // Find the interviewed person
         Personne personneInterviewee =
                 personneRepository.findById(
                         request.getPersonneIntervieweeId()
                 ).orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Personne interviewée introuvable"));
 
         // Find the writer
@@ -69,7 +70,7 @@ public class UpdateInterviewService implements UpdateInterviewUseCase {
                     personneRepository.findById(
                             request.getRedigeParPersonneId()
                     ).orElseThrow(() ->
-                            new RuntimeException(
+                            new ResourceNotFoundException(
                                     "Personne qui a rédigé l'interview introuvable"));
         }
 
@@ -81,7 +82,7 @@ public class UpdateInterviewService implements UpdateInterviewUseCase {
                     personneRepository.findById(
                             request.getSuperviseParPersonneId()
                     ).orElseThrow(() ->
-                            new RuntimeException(
+                            new ResourceNotFoundException(
                                     "Superviseur introuvable"));
         }
 
@@ -93,7 +94,7 @@ public class UpdateInterviewService implements UpdateInterviewUseCase {
                     personneRepository.findById(
                             request.getValideParPersonneId()
                     ).orElseThrow(() ->
-                            new RuntimeException(
+                            new ResourceNotFoundException(
                                     "Validateur introuvable"));
         }
 
@@ -120,18 +121,22 @@ public class UpdateInterviewService implements UpdateInterviewUseCase {
         // Add new questions
         if (request.getQuestions() != null) {
 
-            for (InterviewQuestionRequest questionRequest
-                    : request.getQuestions()) {
+    int numero = 1;
 
-                InterviewQuestion question = new InterviewQuestion();
+    for (InterviewQuestionRequest questionRequest
+            : request.getQuestions()) {
 
-                question.setNumero(questionRequest.getNumero());
-                question.setQuestion(questionRequest.getQuestion());
-                question.setReponse(questionRequest.getReponse());
+        InterviewQuestion question = new InterviewQuestion();
 
-                interview.addQuestion(question);
-            }
-        }
+        question.setNumero(numero);
+        question.setQuestion(questionRequest.getQuestion());
+        question.setReponse(questionRequest.getReponse());
+
+        interview.addQuestion(question);
+
+        numero++;
+    }
+}
 
         // Save updated interview
         Interview savedInterview = interviewRepository.save(interview);

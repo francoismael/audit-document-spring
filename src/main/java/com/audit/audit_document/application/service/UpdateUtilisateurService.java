@@ -1,5 +1,7 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ConflictException;
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.dto.UpdateUtilisateurRequest;
 import com.audit.audit_document.application.dto.UtilisateurResponse;
 import com.audit.audit_document.application.usecases.UpdateUtilisateurUseCase;
@@ -20,16 +22,16 @@ public class UpdateUtilisateurService implements UpdateUtilisateurUseCase {
     public UtilisateurResponse execute(Long id, UpdateUtilisateurRequest request) {
 
         Utilisateur utilisateur = utilisateurRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Utilisateur not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
 
         if (!utilisateur.getUsername().equals(request.getUsername())
                 && utilisateurRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new RuntimeException("Username already exists");
+            throw new ConflictException("Ce nom d'utilisateur existe déjà");
         }
 
         if (!utilisateur.getEmail().equals(request.getEmail())
                 && utilisateurRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new ConflictException("Cette adresse e-mail existe déjà");
         }
 
         utilisateur.setUsername(request.getUsername());

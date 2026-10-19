@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.usecases.DeleteInterviewUseCase;
 import com.audit.audit_document.domain.entity.Interview;
 import com.audit.audit_document.domain.repository.InterviewRepository;
@@ -24,7 +25,7 @@ public class DeleteInterviewService implements DeleteInterviewUseCase {
         // Check that the interview exists
         interviewRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Interview introuvable"));
 
         // Delete the interview

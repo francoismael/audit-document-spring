@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.dto.CreateMissionRequest;
 import com.audit.audit_document.application.dto.MissionPersonneRequest;
 import com.audit.audit_document.application.dto.MissionPersonneResponse;
@@ -7,6 +8,7 @@ import com.audit.audit_document.application.dto.MissionResponse;
 import com.audit.audit_document.application.usecases.UpdateMissionUseCase;
 import com.audit.audit_document.domain.entity.Mission;
 import com.audit.audit_document.domain.entity.MissionPersonne;
+import com.audit.audit_document.domain.entity.MissionRole;
 import com.audit.audit_document.domain.entity.Personne;
 import com.audit.audit_document.domain.entity.Structure;
 import com.audit.audit_document.domain.repository.MissionPersonneRepository;
@@ -50,7 +52,7 @@ public class UpdateMissionService implements UpdateMissionUseCase {
         Mission mission = missionRepository
                 .findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Mission introuvable : " + id
                         ));
 
@@ -58,7 +60,7 @@ public class UpdateMissionService implements UpdateMissionUseCase {
         Structure structure = structureRepository
                 .findById(request.getStructureId())
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Structure introuvable : "
                                         + request.getStructureId()
                         ));
@@ -85,7 +87,7 @@ public class UpdateMissionService implements UpdateMissionUseCase {
                 Personne personne = personneRepository
                         .findById(personneRequest.getPersonneId())
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Personne introuvable : "
                                                 + personneRequest.getPersonneId()
                                 ));
@@ -96,7 +98,7 @@ public class UpdateMissionService implements UpdateMissionUseCase {
                 missionPersonne.setMission(missionUpdated);
                 missionPersonne.setPersonne(personne);
                 missionPersonne.setRoles(
-                        personneRequest.getRoles()
+                        MissionRole.fromValue(personneRequest.getRoles()).name()
                 );
 
                 missionPersonneRepository.save(

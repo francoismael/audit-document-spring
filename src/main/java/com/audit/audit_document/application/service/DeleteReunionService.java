@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.usecases.DeleteReunionUseCase;
 import com.audit.audit_document.domain.repository.ReunionRepository;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,7 @@ public class DeleteReunionService
 
         if (!reunionRepository.findById(id).isPresent()) {
 
-            throw new RuntimeException(
+            throw new ResourceNotFoundException(
                     "Réunion introuvable");
         }
 

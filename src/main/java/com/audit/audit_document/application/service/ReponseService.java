@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,18 +54,18 @@ public class ReponseService implements
         validateRequest(request);
 
         Recommandation recommandation =
-                trouverRecommandation(
+                findRecommandation(
                         request.getRecommandationId()
                 );
 
         /*
-         * Une réponse ne peut être créée
-         * que pour une recommandation retenue.
+         * A response can only be created
+         * for a retained recommendation.
          */
         if (!Boolean.TRUE.equals(
                 recommandation.getRetenue())) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Impossible de créer une réponse : "
                     + "la recommandation n'est pas retenue."
             );
@@ -106,7 +107,7 @@ public class ReponseService implements
                 reponseRepository
                         .findById(id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Réponse introuvable avec l'id : "
                                                 + id
                                 )
@@ -140,9 +141,9 @@ public class ReponseService implements
             Long recommandationId) {
 
         /*
-         * Vérifier que la recommandation existe.
+         * Check that the recommendation exists.
          */
-        trouverRecommandation(
+        findRecommandation(
                 recommandationId
         );
 
@@ -170,25 +171,25 @@ public class ReponseService implements
                 reponseRepository
                         .findById(id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Réponse introuvable avec l'id : "
                                                 + id
                                 )
                         );
 
         Recommandation nouvelleRecommandation =
-                trouverRecommandation(
+                findRecommandation(
                         request.getRecommandationId()
                 );
 
         /*
-         * La réponse doit toujours être liée
-         * à une recommandation retenue.
+         * The response must always be linked
+         * to a retained recommendation.
          */
         if (!Boolean.TRUE.equals(
                 nouvelleRecommandation.getRetenue())) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Impossible de modifier la réponse : "
                     + "la recommandation n'est pas retenue."
             );
@@ -225,7 +226,7 @@ public class ReponseService implements
                 reponseRepository
                         .findById(id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Réponse introuvable avec l'id : "
                                                 + id
                                 )
@@ -245,14 +246,14 @@ public class ReponseService implements
 
         if (request == null) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "La requête ne peut pas être null."
             );
         }
 
         if (request.getRecommandationId() == null) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "La recommandation est obligatoire."
             );
         }
@@ -262,7 +263,7 @@ public class ReponseService implements
                         .trim()
                         .isEmpty()) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "La description de la réponse est obligatoire."
             );
         }
@@ -272,13 +273,13 @@ public class ReponseService implements
     // FIND RECOMMANDATION
     // =========================================================
 
-    private Recommandation trouverRecommandation(
+    private Recommandation findRecommandation(
             Long recommandationId) {
 
         return recommandationRepository
                 .findById(recommandationId)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Recommandation introuvable avec l'id : "
                                         + recommandationId
                         )

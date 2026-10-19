@@ -1,5 +1,7 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
+import com.audit.audit_document.domain.exception.ConflictException;
 import com.audit.audit_document.application.dto.CreatePvAffirmationRequest;
 import com.audit.audit_document.application.dto.PvAffirmationLigneRequest;
 import com.audit.audit_document.application.dto.PvAffirmationLigneResponse;
@@ -16,6 +18,7 @@ import com.audit.audit_document.application.usecases.UpdatePvAffirmationUseCase;
 import com.audit.audit_document.domain.entity.Constat;
 import com.audit.audit_document.domain.entity.Mission;
 import com.audit.audit_document.domain.entity.MissionPersonne;
+import com.audit.audit_document.domain.entity.MissionRole;
 import com.audit.audit_document.domain.entity.PvAffirmation;
 import com.audit.audit_document.domain.entity.PvAffirmationLigne;
 import com.audit.audit_document.domain.entity.PvAffirmationParticipant;
@@ -71,13 +74,13 @@ public class PvAffirmationService
         validateRequest(request);
 
         Mission mission =
-                trouverMission(request.getMissionId());
+                findMission(request.getMissionId());
 
         if (pvRepository
                 .findByMissionId(mission.getId())
                 .isPresent()) {
 
-            throw new IllegalArgumentException(
+            throw new ConflictException(
                     "Un procès-verbal d'affirmation "
                             + "existe déjà pour cette mission."
             );
@@ -97,13 +100,13 @@ public class PvAffirmationService
                 request.getObservationsComplementaires()
         );
 
-        ajouterParticipants(
+        addParticipants(
                 pv,
                 mission,
                 request.getParticipants()
         );
 
-        ajouterLignes(
+        addLignes(
                 pv,
                 mission,
                 request.getLignes()
@@ -132,7 +135,7 @@ public class PvAffirmationService
         PvAffirmation pv =
                 pvRepository.findById(id)
                         .orElseThrow(() ->
-                                new IllegalArgumentException(
+                                new ResourceNotFoundException(
                                         "Procès-verbal d'affirmation "
                                                 + "introuvable avec l'id : "
                                                 + id
@@ -162,7 +165,7 @@ public class PvAffirmationService
                 pvRepository
                         .findByMissionId(missionId)
                         .orElseThrow(() ->
-                                new IllegalArgumentException(
+                                new ResourceNotFoundException(
                                         "Procès-verbal d'affirmation "
                                                 + "introuvable pour la mission : "
                                                 + missionId
@@ -186,7 +189,7 @@ public class PvAffirmationService
         PvAffirmation pv =
                 pvRepository.findById(id)
                         .orElseThrow(() ->
-                                new IllegalArgumentException(
+                                new ResourceNotFoundException(
                                         "Procès-verbal d'affirmation "
                                                 + "introuvable avec l'id : "
                                                 + id
@@ -218,13 +221,13 @@ public class PvAffirmationService
                 request.getObservationsComplementaires()
         );
 
-        mettreAJourParticipants(
+        updateParticipants(
                 pv,
                 mission,
                 request.getParticipants()
         );
 
-        mettreAJourLignes(
+        updateLignes(
                 pv,
                 mission,
                 request.getLignes()
@@ -246,7 +249,7 @@ public class PvAffirmationService
         PvAffirmation pv =
                 pvRepository.findById(id)
                         .orElseThrow(() ->
-                                new IllegalArgumentException(
+                                new ResourceNotFoundException(
                                         "Procès-verbal d'affirmation "
                                                 + "introuvable avec l'id : "
                                                 + id
@@ -306,12 +309,12 @@ public class PvAffirmationService
     // MISSION
     // ============================================================
 
-    private Mission trouverMission(Long id) {
+    private Mission findMission(Long id) {
 
         return missionRepository
                 .findById(id)
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
+                        new ResourceNotFoundException(
                                 "Mission introuvable avec l'id : "
                                         + id
                         )
@@ -322,7 +325,7 @@ public class PvAffirmationService
     // PARTICIPANTS CREATE
     // ============================================================
 
-    private void ajouterParticipants(
+    private void addParticipants(
             PvAffirmation pv,
             Mission mission,
             List<PvAffirmationParticipantRequest>
@@ -345,7 +348,7 @@ public class PvAffirmationService
             }
 
             String type =
-                    normaliserTypeParticipant(
+                    normalizeParticipantType(
                             request.getTypeParticipant()
                     );
 
@@ -360,13 +363,18 @@ public class PvAffirmationService
             }
 
             MissionPersonne missionPersonne =
-                    trouverMissionPersonne(
+                    findMissionPersonne(
                             request.getMissionPersonneId()
                     );
 
-            verifierMissionPersonne(
+            checkMissionPersonneBelongsToMission(
                     missionPersonne,
                     mission
+            );
+
+            checkParticipantRole(
+                    missionPersonne,
+                    type
             );
 
             PvAffirmationParticipant participant =
@@ -390,7 +398,7 @@ public class PvAffirmationService
     // PARTICIPANTS UPDATE
     // ============================================================
 
-    private void mettreAJourParticipants(
+    private void updateParticipants(
             PvAffirmation pv,
             Mission mission,
             List<PvAffirmationParticipantRequest>
@@ -398,7 +406,7 @@ public class PvAffirmationService
 
         pv.getParticipants().clear();
 
-        ajouterParticipants(
+        addParticipants(
                 pv,
                 mission,
                 requests
@@ -406,10 +414,10 @@ public class PvAffirmationService
     }
 
     // ============================================================
-    // LIGNES CREATE
+    // LINES CREATE
     // ============================================================
 
-    private void ajouterLignes(
+    private void addLignes(
             PvAffirmation pv,
             Mission mission,
             List<PvAffirmationLigneRequest>
@@ -453,11 +461,11 @@ public class PvAffirmationService
             }
 
             Constat constat =
-                    trouverConstat(
+                    findConstat(
                             request.getConstatId()
                     );
 
-            verifierConstatMission(
+            checkConstatBelongsToMission(
                     constat,
                     mission
             );
@@ -490,10 +498,10 @@ public class PvAffirmationService
     }
 
     // ============================================================
-    // LIGNES UPDATE
+    // LINES UPDATE
     // ============================================================
 
-    private void mettreAJourLignes(
+    private void updateLignes(
             PvAffirmation pv,
             Mission mission,
             List<PvAffirmationLigneRequest>
@@ -501,7 +509,7 @@ public class PvAffirmationService
 
         pv.getLignes().clear();
 
-        ajouterLignes(
+        addLignes(
                 pv,
                 mission,
                 requests
@@ -512,13 +520,13 @@ public class PvAffirmationService
     // MISSION PERSONNE
     // ============================================================
 
-    private MissionPersonne trouverMissionPersonne(
+    private MissionPersonne findMissionPersonne(
             Long id) {
 
         return missionPersonneRepository
                 .findById(id)
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
+                        new ResourceNotFoundException(
                                 "MissionPersonne introuvable "
                                         + "avec l'id : "
                                         + id
@@ -526,7 +534,7 @@ public class PvAffirmationService
                 );
     }
 
-    private void verifierMissionPersonne(
+    private void checkMissionPersonneBelongsToMission(
             MissionPersonne missionPersonne,
             Mission mission) {
 
@@ -542,23 +550,47 @@ public class PvAffirmationService
         }
     }
 
+    private void checkParticipantRole(
+            MissionPersonne missionPersonne,
+            String typeParticipant) {
+
+        boolean pointFocal =
+                MissionRole.fromValue(missionPersonne.getRoles())
+                        == MissionRole.POINT_FOCAL;
+
+        boolean entiteAuditee =
+                "ENTITE_AUDITEE".equals(typeParticipant);
+
+        if (pointFocal != entiteAuditee) {
+
+            throw new IllegalArgumentException(
+                    entiteAuditee
+                            ? "Un représentant de l'entité auditée "
+                                    + "doit avoir le rôle POINT_FOCAL "
+                                    + "dans la mission."
+                            : "Un point focal ne peut pas participer "
+                                    + "en tant qu'auditeur."
+            );
+        }
+    }
+
     // ============================================================
-    // CONSTAT
+    // FINDING
     // ============================================================
 
-    private Constat trouverConstat(Long id) {
+    private Constat findConstat(Long id) {
 
         return constatRepository
                 .findById(id)
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
+                        new ResourceNotFoundException(
                                 "Constat introuvable avec l'id : "
                                         + id
                         )
                 );
     }
 
-    private void verifierConstatMission(
+    private void checkConstatBelongsToMission(
             Constat constat,
             Mission mission) {
 
@@ -598,10 +630,10 @@ public class PvAffirmationService
     }
 
     // ============================================================
-    // TYPE PARTICIPANT
+    // PARTICIPANT TYPE
     // ============================================================
 
-    private String normaliserTypeParticipant(
+    private String normalizeParticipantType(
             String type) {
 
         if (type == null) {

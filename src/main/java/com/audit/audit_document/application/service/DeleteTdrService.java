@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.usecases.DeleteTdrUseCase;
 import com.audit.audit_document.domain.repository.TdrRepository;
 
@@ -24,7 +25,7 @@ public class DeleteTdrService
 
         if (!tdrRepository.findById(id).isPresent()) {
 
-            throw new RuntimeException(
+            throw new ResourceNotFoundException(
                     "TDR introuvable : " + id);
         }
 

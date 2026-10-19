@@ -20,7 +20,7 @@ public class CreateReunionRequest {
 
     private String lieu;
 
-    /* reunion ouverture */
+    /* opening meeting */
 
     private String observations;
 
@@ -36,7 +36,7 @@ public class CreateReunionRequest {
 
     private String pointsInterlocuteursOrganisation;
 
-    /* reunion cloture */
+    /* closing meeting */
 
     private String remerciements;
 

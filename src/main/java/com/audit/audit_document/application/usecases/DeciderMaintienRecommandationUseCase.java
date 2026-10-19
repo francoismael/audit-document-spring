@@ -5,7 +5,7 @@ import com.audit.audit_document.application.dto.RecommandationResponse;
 
 public interface DeciderMaintienRecommandationUseCase {
 
-    RecommandationResponse decider(
+    RecommandationResponse decide(
             Long recommandationId,
             DecisionMaintienRecommandationRequest request
     );

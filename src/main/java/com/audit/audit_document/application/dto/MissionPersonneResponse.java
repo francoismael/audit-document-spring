@@ -13,7 +13,6 @@ public class MissionPersonneResponse {
     public MissionPersonneResponse() {
     }
 
-        
     public Long getMissionPersonneId() {
         return missionPersonneId;
     }
@@ -21,7 +20,6 @@ public class MissionPersonneResponse {
     public void setMissionPersonneId(Long missionPersonneId) {
         this.missionPersonneId = missionPersonneId;
     }
-
     public Long getPersonneId() {
         return personneId;
     }

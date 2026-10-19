@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.usecases.DeleteUtilisateurUseCase;
 import com.audit.audit_document.domain.repository.UtilisateurRepository;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ public class DeleteUtilisateurService implements DeleteUtilisateurUseCase {
     public void execute(Long id) {
 
         utilisateurRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Utilisateur not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
 
         utilisateurRepository.deleteById(id);
     }

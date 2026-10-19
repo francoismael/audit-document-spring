@@ -11,23 +11,23 @@ public class TestResponse {
 
     private Long ligneProgrammeId;
 
-    // Informations du contrôle
+    // Control information
     private String numeroControle;
 
-    // Informations de l'objectif
+    // Objective information
     private Long objectifId;
     private String objectifNumero;
     private String objectifDescription;
 
-    // Informations de la mission
+    // Mission information
     private String missionNumero;
     private String missionIntitule;
     private String missionObjet;
 
-    // Informations de la structure auditée
+    // Audited structure information
     private String structureNom;
 
-    // Informations du programme de travail
+    // Work programme information
     private String lieu;
     private String periodeObservation;
     private String tacheOperation;
@@ -38,14 +38,14 @@ public class TestResponse {
     private String responsable;
     private String frequence;
 
-    // Informations d'échantillonnage prévues dans le programme
+    // Sampling information planned in the programme
     private String echantillonDescription;
     private String techniqueEchantillonnage;
 
-    // Procédure prévue
+    // Planned procedure
     private String procedureTest;
 
-    // Informations propres au test
+    // Test-specific information
     private LocalDate dateTest;
     private String procedureRealisee;
     private String resumeAnomalies;
@@ -53,29 +53,29 @@ public class TestResponse {
     private Boolean risqueMaitrise;
     private String recommandations;
 
-    // Commentaires
+    // Comments
     private String commentairesChefMission;
     private String commentairesSuperviseur;
 
-    // Contrôle qualité : auditeur
+    // Quality control: auditor
     private Long auditeurMissionPersonneId;
     private String auditeurNom;
     private String auditeurPrenom;
     private LocalDate dateAudit;
 
-    // Contrôle qualité : chef de mission
+    // Quality control: mission leader
     private Long chefMissionMissionPersonneId;
     private String chefMissionNom;
     private String chefMissionPrenom;
     private LocalDate dateRevueChefMission;
 
-    // Contrôle qualité : superviseur
+    // Quality control: supervisor
     private Long superviseurMissionPersonneId;
     private String superviseurNom;
     private String superviseurPrenom;
     private LocalDate dateRevueSuperviseur;
 
-    // Échantillons
+    // Samples
     private List<EchantillonResponse> echantillons;
 
     public TestResponse() {

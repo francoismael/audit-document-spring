@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -35,20 +36,20 @@ public class RecommandationDecisionService
 
 
     @Override
-    public RecommandationResponse decider(
+    public RecommandationResponse decide(
             Long recommandationId,
             DecisionMaintienRecommandationRequest request) {
 
         if (request == null) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "La requête de décision est obligatoire."
             );
         }
 
         if (request.getMaintenue() == null) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "La valeur de maintien est obligatoire."
             );
         }
@@ -57,7 +58,7 @@ public class RecommandationDecisionService
                 recommandationRepository
                         .findById(recommandationId)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Recommandation introuvable avec l'id : "
                                                 + recommandationId
                                 )
@@ -67,7 +68,7 @@ public class RecommandationDecisionService
         if (!Boolean.TRUE.equals(
                 recommandation.getRetenue())) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Cette recommandation n'est pas retenue."
             );
         }
@@ -83,7 +84,7 @@ public class RecommandationDecisionService
         if (reponses == null
                 || reponses.isEmpty()) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Impossible de décider le maintien : "
                     + "aucune réponse n'a été enregistrée "
                     + "pour cette recommandation."

@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -68,21 +69,21 @@ public class ConstatService implements
 
         validateRequest(request);
 
-        Test test = trouverTest(
+        Test test = findTest(
                 request.getTestId()
         );
 
         /*
-         * Une seule recommandation peut être retenue
-         * pour un même constat.
+         * Only one recommendation can be retained
+         * for the same finding.
          */
-        validerRecommandationsRetenues(
+        validateRetainedRecommandations(
                 request.getRecommandations()
         );
 
         /*
-         * Génération automatique de la référence.
-         * Exemple : CST001, CST002, CST003...
+         * Automatic reference generation.
+         * Example: CST001, CST002, CST003...
          */
         Long number =
                 constatRepository.getNextReference();
@@ -115,24 +116,24 @@ public class ConstatService implements
         );
 
         /*
-         * Création des enfants.
+         * Create the children.
          */
-        ajouterCauses(
+        addCauses(
                 constat,
                 request.getCauses()
         );
 
-        ajouterRisques(
+        addRisques(
                 constat,
                 request.getRisques()
         );
 
-        ajouterConsequences(
+        addConsequences(
                 constat,
                 request.getConsequences()
         );
 
-        ajouterRecommandations(
+        addRecommandations(
                 constat,
                 request.getRecommandations()
         );
@@ -157,7 +158,7 @@ public class ConstatService implements
                 constatRepository
                         .findById(id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Constat introuvable avec l'id : "
                                                 + id
                                 )
@@ -190,7 +191,7 @@ public class ConstatService implements
     public List<ConstatResponse> getByTestId(
             Long testId) {
 
-        trouverTest(testId);
+        findTest(testId);
 
         return constatRepository
                 .findByTestId(testId)
@@ -211,10 +212,10 @@ public class ConstatService implements
         validateRequest(request);
 
         /*
-         * Vérifie qu'il n'y a pas plusieurs
-         * recommandations retenues.
+         * Check that there are not several
+         * retained recommendations.
          */
-        validerRecommandationsRetenues(
+        validateRetainedRecommandations(
                 request.getRecommandations()
         );
 
@@ -222,20 +223,20 @@ public class ConstatService implements
                 constatRepository
                         .findById(id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Constat introuvable avec l'id : "
                                                 + id
                                 )
                         );
 
         Test test =
-                trouverTest(
+                findTest(
                         request.getTestId()
                 );
 
         /*
-         * Mise à jour des informations
-         * du constat.
+         * Update the information
+         * of the finding.
          */
         constat.setTest(test);
 
@@ -252,24 +253,24 @@ public class ConstatService implements
         );
 
         /*
-         * Mise à jour des enfants.
+         * Update the children.
          */
-        mettreAJourCauses(
+        updateCauses(
                 constat,
                 request.getCauses()
         );
 
-        mettreAJourRisques(
+        updateRisques(
                 constat,
                 request.getRisques()
         );
 
-        mettreAJourConsequences(
+        updateConsequences(
                 constat,
                 request.getConsequences()
         );
 
-        mettreAJourRecommandations(
+        updateRecommandations(
                 constat,
                 request.getRecommandations()
         );
@@ -296,7 +297,7 @@ public class ConstatService implements
                 constatRepository
                         .findById(id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Constat introuvable avec l'id : "
                                                 + id
                                 )
@@ -316,14 +317,14 @@ public class ConstatService implements
 
         if (request == null) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "La requête ne peut pas être null."
             );
         }
 
         if (request.getTestId() == null) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Le testId est obligatoire."
             );
         }
@@ -333,7 +334,7 @@ public class ConstatService implements
                         .trim()
                         .isEmpty()) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "La description du constat est obligatoire."
             );
         }
@@ -368,10 +369,10 @@ public class ConstatService implements
     }
 
     // =========================================================
-    // VALIDATION DES RECOMMANDATIONS RETENUES
+    // RETAINED RECOMMENDATIONS VALIDATION
     // =========================================================
 
-    private void validerRecommandationsRetenues(
+    private void validateRetainedRecommandations(
             List<RecommandationRequest> requests) {
 
         int nombreRetenues = 0;
@@ -392,7 +393,7 @@ public class ConstatService implements
 
         if (nombreRetenues > 1) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "Une seule recommandation peut être retenue pour un constat."
             );
         }
@@ -402,13 +403,13 @@ public class ConstatService implements
     // TEST
     // =========================================================
 
-    private Test trouverTest(
+    private Test findTest(
             Long testId) {
 
         return testRepository
                 .findById(testId)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Test introuvable avec l'id : "
                                         + testId
                         )
@@ -419,7 +420,7 @@ public class ConstatService implements
     // CREATE CHILDREN
     // =========================================================
 
-    private void ajouterCauses(
+    private void addCauses(
             Constat constat,
             List<CauseRequest> requests) {
 
@@ -439,7 +440,7 @@ public class ConstatService implements
         }
     }
 
-    private void ajouterRisques(
+    private void addRisques(
             Constat constat,
             List<RisqueRequest> requests) {
 
@@ -463,7 +464,7 @@ public class ConstatService implements
         }
     }
 
-    private void ajouterConsequences(
+    private void addConsequences(
             Constat constat,
             List<ConsequenceRequest> requests) {
 
@@ -483,7 +484,7 @@ public class ConstatService implements
         }
     }
 
-    private void ajouterRecommandations(
+    private void addRecommandations(
             Constat constat,
             List<RecommandationRequest> requests) {
 
@@ -502,8 +503,8 @@ public class ConstatService implements
             );
 
             /*
-             * Si retenue est null,
-             * on considère false.
+             * If retenue is null,
+             * it is considered false.
              */
             Boolean retenue =
                     request.getRetenue() != null
@@ -515,8 +516,8 @@ public class ConstatService implements
             );
 
             /*
-             * Une nouvelle recommandation
-             * n'est pas encore maintenue.
+             * A new recommendation
+             * is not maintained yet.
              */
             recommandation.setMaintenue(
                     null
@@ -532,7 +533,7 @@ public class ConstatService implements
     // UPDATE CHILDREN
     // =========================================================
 
-    private void mettreAJourCauses(
+    private void updateCauses(
             Constat constat,
             List<CauseRequest> requests) {
 
@@ -558,7 +559,7 @@ public class ConstatService implements
             } else {
 
                 Cause cause =
-                        trouverCauseDuConstat(
+                        findConstatCause(
                                 constat,
                                 request.getId()
                         );
@@ -573,13 +574,13 @@ public class ConstatService implements
             }
         }
 
-        supprimerCausesAbsentes(
+        removeMissingCauses(
                 constat,
                 idsRecus
         );
     }
 
-    private void mettreAJourRisques(
+    private void updateRisques(
             Constat constat,
             List<RisqueRequest> requests) {
 
@@ -609,7 +610,7 @@ public class ConstatService implements
             } else {
 
                 Risque risque =
-                        trouverRisqueDuConstat(
+                        findConstatRisque(
                                 constat,
                                 request.getId()
                         );
@@ -628,13 +629,13 @@ public class ConstatService implements
             }
         }
 
-        supprimerRisquesAbsentes(
+        removeMissingRisques(
                 constat,
                 idsRecus
         );
     }
 
-    private void mettreAJourConsequences(
+    private void updateConsequences(
             Constat constat,
             List<ConsequenceRequest> requests) {
 
@@ -660,7 +661,7 @@ public class ConstatService implements
             } else {
 
                 Consequence consequence =
-                        trouverConsequenceDuConstat(
+                        findConstatConsequence(
                                 constat,
                                 request.getId()
                         );
@@ -675,13 +676,13 @@ public class ConstatService implements
             }
         }
 
-        supprimerConsequencesAbsentes(
+        removeMissingConsequences(
                 constat,
                 idsRecus
         );
     }
 
-    private void mettreAJourRecommandations(
+    private void updateRecommandations(
             Constat constat,
             List<RecommandationRequest> requests) {
 
@@ -697,7 +698,7 @@ public class ConstatService implements
 
             /*
              * ==========================================
-             * NOUVELLE RECOMMANDATION
+             * NEW RECOMMENDATION
              * ==========================================
              */
             if (request.getId() == null) {
@@ -719,8 +720,8 @@ public class ConstatService implements
                 );
 
                 /*
-                 * Une nouvelle recommandation
-                 * n'est pas encore maintenue.
+                 * A new recommendation
+                 * is not maintained yet.
                  */
                 recommandation.setMaintenue(
                         null
@@ -734,13 +735,13 @@ public class ConstatService implements
 
             /*
              * ==========================================
-             * RECOMMANDATION EXISTANTE
+             * EXISTING RECOMMENDATION
              * ==========================================
              */
             else {
 
                 Recommandation recommandation =
-                        trouverRecommandationDuConstat(
+                        findConstatRecommandation(
                                 constat,
                                 request.getId()
                         );
@@ -759,8 +760,8 @@ public class ConstatService implements
                 );
 
                 /*
-                 * Si la recommandation n'est plus retenue,
-                 * aucune décision de maintien ne doit rester.
+                 * If the recommendation is no longer retained,
+                 * no maintenance decision must remain.
                  */
                 if (!retenue) {
 
@@ -770,9 +771,9 @@ public class ConstatService implements
                 }
 
                 /*
-                 * Si retenue = true,
-                 * on conserve l'ancienne valeur de
-                 * maintenue.
+                 * If retenue = true,
+                 * the previous value of
+                 * maintenue is kept.
                  */
                 idsRecus.add(
                         request.getId()
@@ -780,7 +781,7 @@ public class ConstatService implements
             }
         }
 
-        supprimerRecommandationsAbsentes(
+        removeMissingRecommandations(
                 constat,
                 idsRecus
         );
@@ -790,7 +791,7 @@ public class ConstatService implements
     // FIND CHILDREN
     // =========================================================
 
-    private Cause trouverCauseDuConstat(
+    private Cause findConstatCause(
             Constat constat,
             Long causeId) {
 
@@ -803,7 +804,7 @@ public class ConstatService implements
                 )
                 .findFirst()
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new IllegalArgumentException(
                                 "La cause "
                                         + causeId
                                         + " n'appartient pas au constat "
@@ -812,7 +813,7 @@ public class ConstatService implements
                 );
     }
 
-    private Risque trouverRisqueDuConstat(
+    private Risque findConstatRisque(
             Constat constat,
             Long risqueId) {
 
@@ -825,7 +826,7 @@ public class ConstatService implements
                 )
                 .findFirst()
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new IllegalArgumentException(
                                 "Le risque "
                                         + risqueId
                                         + " n'appartient pas au constat "
@@ -834,7 +835,7 @@ public class ConstatService implements
                 );
     }
 
-    private Consequence trouverConsequenceDuConstat(
+    private Consequence findConstatConsequence(
             Constat constat,
             Long consequenceId) {
 
@@ -847,7 +848,7 @@ public class ConstatService implements
                 )
                 .findFirst()
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new IllegalArgumentException(
                                 "La conséquence "
                                         + consequenceId
                                         + " n'appartient pas au constat "
@@ -856,7 +857,7 @@ public class ConstatService implements
                 );
     }
 
-    private Recommandation trouverRecommandationDuConstat(
+    private Recommandation findConstatRecommandation(
             Constat constat,
             Long recommandationId) {
 
@@ -869,7 +870,7 @@ public class ConstatService implements
                 )
                 .findFirst()
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new IllegalArgumentException(
                                 "La recommandation "
                                         + recommandationId
                                         + " n'appartient pas au constat "
@@ -882,7 +883,7 @@ public class ConstatService implements
     // DELETE CHILDREN NOT SENT
     // =========================================================
 
-    private void supprimerCausesAbsentes(
+    private void removeMissingCauses(
             Constat constat,
             Set<Long> idsRecus) {
 
@@ -895,7 +896,7 @@ public class ConstatService implements
                 );
     }
 
-    private void supprimerRisquesAbsentes(
+    private void removeMissingRisques(
             Constat constat,
             Set<Long> idsRecus) {
 
@@ -908,7 +909,7 @@ public class ConstatService implements
                 );
     }
 
-    private void supprimerConsequencesAbsentes(
+    private void removeMissingConsequences(
             Constat constat,
             Set<Long> idsRecus) {
 
@@ -921,7 +922,7 @@ public class ConstatService implements
                 );
     }
 
-    private void supprimerRecommandationsAbsentes(
+    private void removeMissingRecommandations(
             Constat constat,
             Set<Long> idsRecus) {
 
@@ -945,7 +946,7 @@ public class ConstatService implements
                 new ConstatResponse();
 
         // =====================================================
-        // CONSTAT
+        // FINDING
         // =====================================================
 
         response.setId(
@@ -986,7 +987,7 @@ public class ConstatService implements
             );
 
             // =================================================
-            // LIGNE DU PROGRAMME
+            // PROGRAMME LINE
             // =================================================
 
             LigneProgramme ligneProgramme =
@@ -1003,7 +1004,7 @@ public class ConstatService implements
                 );
 
                 // =============================================
-                // OBJECTIF
+                // OBJECTIVE
                 // =============================================
 
                 Objectif objectif =
@@ -1038,7 +1039,7 @@ public class ConstatService implements
         );
 
         // =====================================================
-        // RISQUES
+        // RISKS
         // =====================================================
 
         response.setRisques(
@@ -1060,7 +1061,7 @@ public class ConstatService implements
         );
 
         // =====================================================
-        // RECOMMANDATIONS
+        // RECOMMENDATIONS
         // =====================================================
 
         response.setRecommandations(
@@ -1095,7 +1096,7 @@ public class ConstatService implements
     }
 
     // =========================================================
-    // RISQUE RESPONSE
+    // RISK RESPONSE
     // =========================================================
 
     private RisqueResponse toRisqueResponse(
@@ -1141,7 +1142,7 @@ public class ConstatService implements
     }
 
     // =========================================================
-    // RECOMMANDATION RESPONSE
+    // RECOMMENDATION RESPONSE
     // =========================================================
 
     private RecommandationResponse toRecommandationResponse(

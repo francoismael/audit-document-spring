@@ -107,7 +107,7 @@ public class GetAllTdrsService
         response.setLivrables(
                 tdr.getLivrables());
 
-        // Objectifs
+        // Objectives
         List<ObjectifResponse> objectifResponses =
                 new ArrayList<>();
 

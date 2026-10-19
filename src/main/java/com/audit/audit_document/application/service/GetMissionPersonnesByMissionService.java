@@ -49,16 +49,16 @@ public class GetMissionPersonnesByMissionService
                     new MissionPersonneResponse();
 
             /*
-             * ID de la relation mission_personne
+             * ID of the mission_personne relation
              *
-             * Exemple : 72
+             * Example: 72
              */
             response.setMissionPersonneId(
                     missionPersonne.getId()
             );
 
             /*
-             * Informations de la personne
+             * Person information
              */
             if (missionPersonne.getPersonne() != null) {
 
@@ -94,7 +94,7 @@ public class GetMissionPersonnesByMissionService
             }
 
             /*
-             * Rôle de la personne dans la mission
+             * Role of the person in the mission
              */
             response.setRoles(
                     missionPersonne.getRoles()

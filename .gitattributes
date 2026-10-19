@@ -1,2 +1,15 @@
+# Line endings: LF everywhere in the repository and the working copy,
+# except Windows scripts which need CRLF.
+* text=auto eol=lf
 /mvnw text eol=lf
 *.cmd text eol=crlf
+
+# Binary files: never convert.
+*.docx binary
+*.doc binary
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.jar binary

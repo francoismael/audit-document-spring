@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.dto.LigneProgrammeResponse;
 import com.audit.audit_document.application.dto.ProgrammeTravailResponse;
 import com.audit.audit_document.application.usecases.GetProgrammeTravailByIdUseCase;
@@ -37,7 +38,7 @@ public class GetProgrammeTravailByIdService
         ProgrammeTravail programme =
                 programmeRepository.findById(id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Programme de travail introuvable"
                                 )
                         );

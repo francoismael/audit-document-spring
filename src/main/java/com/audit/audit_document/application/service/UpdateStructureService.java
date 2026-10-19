@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.dto.UpdateStructureRequest;
 import com.audit.audit_document.application.usecases.UpdateStructureUseCase;
 import com.audit.audit_document.domain.entity.Structure;
@@ -26,7 +27,7 @@ public class UpdateStructureService implements UpdateStructureUseCase {
 
         Structure structure = structureRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Structure introuvable avec l'id : " + id
                         )
                 );

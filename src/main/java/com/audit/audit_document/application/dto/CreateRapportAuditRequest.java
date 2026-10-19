@@ -5,19 +5,12 @@ import java.time.LocalDate;
 public class CreateRapportAuditRequest {
 
     private Long missionId;
-
     private String motifs;
-
     private String nature;
-
     private String versionRapport;
-
     private LocalDate dateEmission;
-
     private String proprietaireDocument;
-
     private String destinataires;
-
     private String classification;
 
     public CreateRapportAuditRequest() {

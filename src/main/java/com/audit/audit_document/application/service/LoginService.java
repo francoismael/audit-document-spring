@@ -6,11 +6,16 @@ import com.audit.audit_document.application.usecases.LoginUseCase;
 import com.audit.audit_document.domain.entity.Utilisateur;
 import com.audit.audit_document.domain.repository.UtilisateurRepository;
 import com.audit.audit_document.infrastructure.security.JwtService;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class LoginService implements LoginUseCase {
+
+    private static final String INVALID_CREDENTIALS =
+            "Nom d'utilisateur ou mot de passe incorrect";
 
     private final UtilisateurRepository utilisateurRepository;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -29,20 +34,28 @@ public class LoginService implements LoginUseCase {
     @Override
     public LoginResponse execute(LoginRequest request) {
 
+        if (request == null
+                || request.getUsername() == null
+                || request.getPassword() == null) {
+
+            throw new BadCredentialsException(INVALID_CREDENTIALS);
+        }
+
         Utilisateur utilisateur = utilisateurRepository
                 .findByUsername(request.getUsername())
                 .orElseThrow(() ->
-                        new RuntimeException("Username or password incorrect"));
+                        new BadCredentialsException(INVALID_CREDENTIALS));
 
-        if (!utilisateur.getActif()) {
-            throw new RuntimeException("Utilisateur désactivé");
-        }
-
+        // The password is checked first so a disabled account is not revealed to strangers.
         if (!passwordEncoder.matches(
                 request.getPassword(),
                 utilisateur.getPassword()
         )) {
-            throw new RuntimeException("Username or password incorrect");
+            throw new BadCredentialsException(INVALID_CREDENTIALS);
+        }
+
+        if (!Boolean.TRUE.equals(utilisateur.getActif())) {
+            throw new DisabledException("Ce compte est désactivé");
         }
 
         String token = jwtService.generateToken(utilisateur);

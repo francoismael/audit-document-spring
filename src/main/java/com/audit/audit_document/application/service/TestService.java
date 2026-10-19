@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.dto.CreateTestRequest;
 import com.audit.audit_document.application.dto.EchantillonRequest;
 import com.audit.audit_document.application.dto.EchantillonResponse;
@@ -13,6 +14,7 @@ import com.audit.audit_document.application.usecases.UpdateTestUseCase;
 import com.audit.audit_document.domain.entity.Echantillon;
 import com.audit.audit_document.domain.entity.LigneProgramme;
 import com.audit.audit_document.domain.entity.MissionPersonne;
+import com.audit.audit_document.domain.entity.MissionRole;
 import com.audit.audit_document.domain.entity.Objectif;
 import com.audit.audit_document.domain.entity.Test;
 import com.audit.audit_document.domain.repository.EchantillonRepository;
@@ -78,7 +80,7 @@ public class TestService implements
         }
 
         /*
-         * Récupération de la ligne du programme.
+         * Get the programme line.
          */
         LigneProgramme ligneProgramme =
                 ligneProgrammeRepository
@@ -86,26 +88,26 @@ public class TestService implements
                                 request.getLigneProgrammeId()
                         )
                         .orElseThrow(() ->
-                                new IllegalArgumentException(
+                                new ResourceNotFoundException(
                                         "LigneProgramme introuvable avec l'id : "
                                                 + request.getLigneProgrammeId()
                                 )
                         );
 
         /*
-         * Déterminer automatiquement la mission
-         * à laquelle appartient la ligne du programme.
+         * Automatically determine the mission
+         * that the programme line belongs to.
          */
         Long missionId =
-                obtenirMissionId(
+                resolveMissionId(
                         ligneProgramme
                 );
 
         Test test = new Test();
 
         /*
-         * Référence automatique du test.
-         * Exemple : FT001, FT002, FT003...
+         * Automatic test reference.
+         * Example: FT001, FT002, FT003...
          */
         test.setReference(
                 testRepository.getNextReference()
@@ -116,67 +118,67 @@ public class TestService implements
         );
 
         /*
-         * Données propres au test.
+         * Test-specific data.
          */
-        remplirDonneesTest(
+        fillTestData(
                 test,
                 request
         );
 
         /*
-         * Personnes du contrôle qualité.
+         * Quality control people.
          *
-         * Le backend vérifie maintenant :
-         * - existence de la MissionPersonne
-         * - appartenance à la mission
-         * - rôle correct
+         * The backend now checks:
+         * - the MissionPersonne exists
+         * - it belongs to the mission
+         * - correct role
          */
         test.setAuditeur(
-                trouverMissionPersonne(
+                findMissionPersonne(
                         request.getAuditeurMissionPersonneId(),
                         missionId,
-                        "AUDITEUR"
+                        MissionRole.AUDITEUR
                 )
         );
 
         test.setChefMission(
-                trouverMissionPersonne(
+                findMissionPersonne(
                         request.getChefMissionMissionPersonneId(),
                         missionId,
-                        "CHEF_MISSION"
+                        MissionRole.CHEF_MISSION
                 )
         );
 
         test.setSuperviseur(
-                trouverMissionPersonne(
+                findMissionPersonne(
                         request.getSuperviseurMissionPersonneId(),
                         missionId,
-                        "SUPERVISEUR"
+                        MissionRole.SUPERVISEUR
                 )
         );
 
         /*
-         * Première sauvegarde :
-         * nécessaire pour obtenir l'ID du Test.
+         * First save:
+         * needed to get the Test ID.
          */
         Test testSauvegarde =
                 testRepository.save(test);
 
         /*
-         * Création des échantillons.
+         * Create the samples.
          */
-        ajouterNouveauxEchantillons(
+        addNewEchantillons(
                 testSauvegarde,
                 request.getEchantillons()
         );
 
         /*
-         * Sauvegarde finale avec les échantillons.
+         * Final save with the samples.
          */
         Test resultat =
                 testRepository.save(testSauvegarde);
 
-        return convertirEnResponse(resultat);
+        return toResponse(resultat);
     }
 
     // ============================================================
@@ -191,13 +193,13 @@ public class TestService implements
                 testRepository
                         .findById(id)
                         .orElseThrow(() ->
-                                new IllegalArgumentException(
+                                new ResourceNotFoundException(
                                         "Test introuvable avec l'id : "
                                                 + id
                                 )
                         );
 
-        return convertirEnResponse(test);
+        return toResponse(test);
     }
 
     // ============================================================
@@ -217,7 +219,7 @@ public class TestService implements
         for (Test test : tests) {
 
             responses.add(
-                    convertirEnResponse(test)
+                    toResponse(test)
             );
         }
 
@@ -234,12 +236,12 @@ public class TestService implements
             Long ligneProgrammeId) {
 
         /*
-         * Vérifier que la ligne existe.
+         * Check that the line exists.
          */
         ligneProgrammeRepository
                 .findById(ligneProgrammeId)
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
+                        new ResourceNotFoundException(
                                 "LigneProgramme introuvable avec l'id : "
                                         + ligneProgrammeId
                         )
@@ -256,7 +258,7 @@ public class TestService implements
         for (Test test : tests) {
 
             responses.add(
-                    convertirEnResponse(test)
+                    toResponse(test)
             );
         }
 
@@ -276,7 +278,7 @@ public class TestService implements
                 testRepository
                         .findById(id)
                         .orElseThrow(() ->
-                                new IllegalArgumentException(
+                                new ResourceNotFoundException(
                                         "Test introuvable avec l'id : "
                                                 + id
                                 )
@@ -295,7 +297,7 @@ public class TestService implements
         }
 
         /*
-         * Récupération de la nouvelle ligne du programme.
+         * Get the new programme line.
          */
         LigneProgramme ligneProgramme =
                 ligneProgrammeRepository
@@ -303,72 +305,72 @@ public class TestService implements
                                 request.getLigneProgrammeId()
                         )
                         .orElseThrow(() ->
-                                new IllegalArgumentException(
+                                new ResourceNotFoundException(
                                         "LigneProgramme introuvable avec l'id : "
                                                 + request.getLigneProgrammeId()
                                 )
                         );
 
         /*
-         * Déterminer automatiquement la mission
-         * correspondant à cette ligne.
+         * Automatically determine the mission
+         * matching this line.
          */
         Long missionId =
-                obtenirMissionId(
+                resolveMissionId(
                         ligneProgramme
                 );
 
         /*
-         * On peut modifier la ligne du programme,
-         * mais la référence FTxxx reste inchangée.
+         * The programme line can be changed,
+         * but the FTxxx reference stays unchanged.
          */
         test.setLigneProgramme(
                 ligneProgramme
         );
 
         /*
-         * Mise à jour des données du test.
+         * Update the test data.
          */
-        remplirDonneesTest(
+        fillTestData(
                 test,
                 request
         );
 
         /*
-         * Mise à jour des personnes.
+         * Update the people.
          *
-         * Le backend vérifie :
-         * - la mission
-         * - le rôle
+         * The backend checks:
+         * - the mission
+         * - the role
          */
         test.setAuditeur(
-                trouverMissionPersonne(
+                findMissionPersonne(
                         request.getAuditeurMissionPersonneId(),
                         missionId,
-                        "AUDITEUR"
+                        MissionRole.AUDITEUR
                 )
         );
 
         test.setChefMission(
-                trouverMissionPersonne(
+                findMissionPersonne(
                         request.getChefMissionMissionPersonneId(),
                         missionId,
-                        "CHEF_MISSION"
+                        MissionRole.CHEF_MISSION
                 )
         );
 
         test.setSuperviseur(
-                trouverMissionPersonne(
+                findMissionPersonne(
                         request.getSuperviseurMissionPersonneId(),
                         missionId,
-                        "SUPERVISEUR"
+                        MissionRole.SUPERVISEUR
                 )
         );
 
         /*
-         * Mise à jour des échantillons.
+         * Update the samples.
          */
-        mettreAJourEchantillons(
+        updateEchantillons(
                 test,
                 request.getEchantillons()
         );
@@ -376,7 +378,7 @@ public class TestService implements
         Test resultat =
                 testRepository.save(test);
 
-        return convertirEnResponse(resultat);
+        return toResponse(resultat);
     }
 
     // ============================================================
@@ -390,7 +392,7 @@ public class TestService implements
                 testRepository
                         .findById(id)
                         .orElseThrow(() ->
-                                new IllegalArgumentException(
+                                new ResourceNotFoundException(
                                         "Test introuvable avec l'id : "
                                                 + id
                                 )
@@ -402,10 +404,10 @@ public class TestService implements
     }
 
     // ============================================================
-    // REMPLIR LES DONNÉES DU TEST
+    // FILL TEST DATA
     // ============================================================
 
-    private void remplirDonneesTest(
+    private void fillTestData(
             Test test,
             CreateTestRequest request) {
 
@@ -455,10 +457,10 @@ public class TestService implements
     }
 
     // ============================================================
-    // OBTENIR LA MISSION DE LA LIGNE DU PROGRAMME
+    // GET THE MISSION OF THE PROGRAMME LINE
     // ============================================================
 
-    private Long obtenirMissionId(
+    private Long resolveMissionId(
             LigneProgramme ligneProgramme) {
 
         if (ligneProgramme == null) {
@@ -506,37 +508,37 @@ public class TestService implements
     }
 
     // ============================================================
-    // RÉCUPÉRER UNE MISSION PERSONNE
+    // FIND A MISSION PERSONNE
     // ============================================================
 
-    private MissionPersonne trouverMissionPersonne(
+    private MissionPersonne findMissionPersonne(
             Long id,
             Long missionId,
-            String role) {
+            MissionRole role) {
 
         /*
-         * Le champ est facultatif.
+         * The field is optional.
          */
         if (id == null) {
             return null;
         }
 
         /*
-         * Vérifier que la MissionPersonne existe.
+         * Check that the MissionPersonne exists.
          */
         MissionPersonne missionPersonne =
                 missionPersonneRepository
                         .findById(id)
                         .orElseThrow(() ->
-                                new IllegalArgumentException(
+                                new ResourceNotFoundException(
                                         "MissionPersonne introuvable avec l'id : "
                                                 + id
                                 )
                         );
 
         /*
-         * Vérifier que la MissionPersonne appartient
-         * bien à la mission du Test.
+         * Check that the MissionPersonne belongs
+         * to the Test's mission.
          */
         if (missionPersonne.getMission() == null
                 || missionPersonne.getMission().getId() == null
@@ -553,11 +555,11 @@ public class TestService implements
         }
 
         /*
-         * Vérifier le rôle.
+         * Check the role.
          */
         if (missionPersonne.getRoles() == null
                 || !missionPersonne.getRoles()
-                        .equalsIgnoreCase(role)) {
+                        .equalsIgnoreCase(role.name())) {
 
             throw new IllegalArgumentException(
                     "La MissionPersonne "
@@ -571,10 +573,10 @@ public class TestService implements
     }
 
     // ============================================================
-    // AJOUTER LES NOUVEAUX ÉCHANTILLONS
+    // ADD NEW SAMPLES
     // ============================================================
 
-    private void ajouterNouveauxEchantillons(
+    private void addNewEchantillons(
             Test test,
             List<EchantillonRequest> requests) {
 
@@ -583,7 +585,7 @@ public class TestService implements
         }
 
         /*
-         * Numéro interne :
+         * Internal number:
          * 1, 2, 3...
          */
         Integer prochainNumero =
@@ -601,7 +603,7 @@ public class TestService implements
             );
 
             /*
-             * Numéro automatique.
+             * Automatic number.
              */
             echantillon.setNumero(
                     prochainNumero
@@ -610,8 +612,8 @@ public class TestService implements
             prochainNumero++;
 
             /*
-             * Référence automatique.
-             * Exemple : DOS-001, DOS-002...
+             * Automatic reference.
+             * Example: DOS-001, DOS-002...
              */
             echantillon.setReference(
                     echantillonRepository.getNextReference()
@@ -634,16 +636,16 @@ public class TestService implements
     }
 
     // ============================================================
-    // METTRE À JOUR LES ÉCHANTILLONS
+    // UPDATE SAMPLES
     // ============================================================
 
-    private void mettreAJourEchantillons(
+    private void updateEchantillons(
             Test test,
             List<EchantillonRequest> requests) {
 
         /*
-         * Si null :
-         * supprimer tous les anciens échantillons.
+         * If null:
+         * delete all the previous samples.
          */
         if (requests == null) {
 
@@ -664,7 +666,7 @@ public class TestService implements
         }
 
         /*
-         * Indexer les anciens échantillons par leur ID.
+         * Index the previous samples by ID.
          */
         Map<Long, Echantillon> anciensParId =
                 new HashMap<>();
@@ -682,13 +684,13 @@ public class TestService implements
         }
 
         /*
-         * IDs reçus du frontend.
+         * IDs received from the frontend.
          */
         Set<Long> idsRecus =
                 new HashSet<>();
 
         /*
-         * Prochain numéro d'échantillon.
+         * Next sample number.
          */
         Integer prochainNumero =
                 echantillonRepository.getNextNumero(
@@ -696,14 +698,14 @@ public class TestService implements
                 );
 
         /*
-         * Parcourir les échantillons reçus.
+         * Iterate over the received samples.
          */
         for (EchantillonRequest request :
                 requests) {
 
             /*
              * ====================================================
-             * CAS 1 : ÉCHANTILLON EXISTANT
+             * CASE 1: EXISTING SAMPLE
              * ====================================================
              */
             if (request.getId() != null) {
@@ -714,8 +716,8 @@ public class TestService implements
                         );
 
                 /*
-                 * Vérifier que l'échantillon appartient
-                 * bien au Test courant.
+                 * Check that the sample belongs
+                 * to the current Test.
                  */
                 if (ancien == null) {
 
@@ -732,7 +734,7 @@ public class TestService implements
                 );
 
                 /*
-                 * La référence et le numéro restent stables.
+                 * The reference and the number stay stable.
                  */
                 ancien.setAnomalieDetectee(
                         request.getAnomalieDetectee() != null
@@ -747,7 +749,7 @@ public class TestService implements
 
             /*
              * ====================================================
-             * CAS 2 : NOUVEL ÉCHANTILLON
+             * CASE 2: NEW SAMPLE
              * ====================================================
              */
             else {
@@ -760,7 +762,7 @@ public class TestService implements
                 );
 
                 /*
-                 * Nouveau numéro automatique.
+                 * New automatic number.
                  */
                 nouveau.setNumero(
                         prochainNumero
@@ -769,7 +771,7 @@ public class TestService implements
                 prochainNumero++;
 
                 /*
-                 * Nouvelle référence automatique.
+                 * New automatic reference.
                  */
                 nouveau.setReference(
                         echantillonRepository
@@ -794,11 +796,11 @@ public class TestService implements
 
         /*
          * ========================================================
-         * SUPPRESSION DES ANCIENS ÉCHANTILLONS
+         * DELETE PREVIOUS SAMPLES
          * ========================================================
          *
-         * Si un ancien échantillon n'est plus présent
-         * dans la requête, il est supprimé.
+         * If a previous sample is no longer present
+         * in the request, it is deleted.
          */
         List<Echantillon> anciens =
                 new ArrayList<>(
@@ -812,7 +814,7 @@ public class TestService implements
                     echantillon.getId();
 
             /*
-             * Les nouveaux échantillons ont id = null.
+             * New samples have id = null.
              */
             if (echantillonId != null
                     && !idsRecus.contains(echantillonId)) {
@@ -828,7 +830,7 @@ public class TestService implements
     // ENTITY -> RESPONSE
     // ============================================================
 
-    private TestResponse convertirEnResponse(
+    private TestResponse toResponse(
             Test test) {
 
         TestResponse response =
@@ -849,7 +851,7 @@ public class TestService implements
 
         /*
          * ========================================================
-         * LIGNE PROGRAMME
+         * PROGRAMME LINE
          * ========================================================
          */
         LigneProgramme ligneProgramme =
@@ -909,7 +911,7 @@ public class TestService implements
 
         /*
          * ========================================================
-         * OBJECTIF
+         * OBJECTIVE
          * ========================================================
          */
         Objectif objectif =
@@ -992,7 +994,7 @@ public class TestService implements
 
         /*
          * ========================================================
-         * DONNÉES PROPRES AU TEST
+         * TEST-SPECIFIC DATA
          * ========================================================
          */
         response.setDateTest(
@@ -1029,10 +1031,10 @@ public class TestService implements
 
         /*
          * ========================================================
-         * AUDITEUR
+         * AUDITOR
          * ========================================================
          */
-        remplirPersonneResponse(
+        fillPersonneResponse(
                 test.getAuditeur(),
                 "auditeur",
                 response
@@ -1044,10 +1046,10 @@ public class TestService implements
 
         /*
          * ========================================================
-         * CHEF DE MISSION
+         * MISSION LEADER
          * ========================================================
          */
-        remplirPersonneResponse(
+        fillPersonneResponse(
                 test.getChefMission(),
                 "chefMission",
                 response
@@ -1059,10 +1061,10 @@ public class TestService implements
 
         /*
          * ========================================================
-         * SUPERVISEUR
+         * SUPERVISOR
          * ========================================================
          */
-        remplirPersonneResponse(
+        fillPersonneResponse(
                 test.getSuperviseur(),
                 "superviseur",
                 response
@@ -1074,7 +1076,7 @@ public class TestService implements
 
         /*
          * ========================================================
-         * ÉCHANTILLONS
+         * SAMPLES
          * ========================================================
          */
         List<EchantillonResponse>
@@ -1130,7 +1132,7 @@ public class TestService implements
     // PERSONNE -> RESPONSE
     // ============================================================
 
-    private void remplirPersonneResponse(
+    private void fillPersonneResponse(
             MissionPersonne missionPersonne,
             String type,
             TestResponse response) {
@@ -1142,7 +1144,7 @@ public class TestService implements
         }
 
         /*
-         * AUDITEUR
+         * AUDITOR
          */
         if ("auditeur".equals(type)) {
 
@@ -1164,7 +1166,7 @@ public class TestService implements
         }
 
         /*
-         * CHEF DE MISSION
+         * MISSION LEADER
          */
         else if ("chefMission".equals(type)) {
 
@@ -1186,7 +1188,7 @@ public class TestService implements
         }
 
         /*
-         * SUPERVISEUR
+         * SUPERVISOR
          */
         else if ("superviseur".equals(type)) {
 

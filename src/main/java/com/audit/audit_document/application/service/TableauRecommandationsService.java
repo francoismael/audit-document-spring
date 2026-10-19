@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -55,7 +56,7 @@ public class TableauRecommandationsService
                 missionRepository
                         .findById(missionId)
                         .orElseThrow(() ->
-                                new IllegalArgumentException(
+                                new ResourceNotFoundException(
                                         "Mission introuvable avec l'id : "
                                                 + missionId
                                 )
@@ -73,7 +74,7 @@ public class TableauRecommandationsService
         );
 
         // =====================================================
-        // STRUCTURE AUDITÉE
+        // AUDITED STRUCTURE
         // =====================================================
 
         Structure structure =
@@ -91,14 +92,14 @@ public class TableauRecommandationsService
         }
 
         // =====================================================
-        // CONSTATS DE LA MISSION
+        // MISSION FINDINGS
         // =====================================================
 
         List<Constat> constats =
                 constatRepository.findAll()
                         .stream()
                         .filter(constat ->
-                                appartientAMission(
+                                belongsToMission(
                                         constat,
                                         missionId
                                 )
@@ -109,7 +110,7 @@ public class TableauRecommandationsService
                 new ArrayList<>();
 
         // =====================================================
-        // PARCOURIR LES CONSTATS
+        // ITERATE OVER FINDINGS
         // =====================================================
 
         for (Constat constat : constats) {
@@ -119,7 +120,7 @@ public class TableauRecommandationsService
             }
 
             // =================================================
-            // GARDER UNIQUEMENT LA RECOMMANDATION RETENUE
+            // KEEP ONLY THE RETAINED RECOMMENDATION
             // =================================================
 
             for (Recommandation recommandation :
@@ -132,7 +133,7 @@ public class TableauRecommandationsService
                 }
 
                 RecommandationRegroupeeResponse ligne =
-                        construireLigne(
+                        buildLigne(
                                 constat,
                                 recommandation
                         );
@@ -148,7 +149,7 @@ public class TableauRecommandationsService
 
 
 
-    private boolean appartientAMission(
+    private boolean belongsToMission(
             Constat constat,
             Long missionId) {
 
@@ -202,7 +203,7 @@ public class TableauRecommandationsService
 
 
 
-    private RecommandationRegroupeeResponse construireLigne(
+    private RecommandationRegroupeeResponse buildLigne(
             Constat constat,
             Recommandation recommandation) {
 
@@ -248,7 +249,7 @@ public class TableauRecommandationsService
                         );
 
         Reponse derniereReponse =
-                trouverDerniereReponse(
+                findLatestReponse(
                         reponses
                 );
 
@@ -271,7 +272,7 @@ public class TableauRecommandationsService
     }
 
 
-    private Reponse trouverDerniereReponse(
+    private Reponse findLatestReponse(
             List<Reponse> reponses) {
 
         if (reponses == null

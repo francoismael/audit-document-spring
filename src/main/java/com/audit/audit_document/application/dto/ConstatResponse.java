@@ -12,14 +12,14 @@ public class ConstatResponse {
     private String testReference;
 
     /*
-     * Informations héritées de la ligne du programme
+     * Information inherited from the programme line
      */
     private String numeroControle;
 
     private String domaineCycle;
 
     /*
-     * Informations héritées de l'objectif
+     * Information inherited from the objective
      */
     private Long objectifId;
 
@@ -28,7 +28,7 @@ public class ConstatResponse {
     private String objectifDescription;
 
     /*
-     * Informations propres au constat
+     * Finding-specific information
      */
     private String reference;
 
@@ -39,7 +39,7 @@ public class ConstatResponse {
     private String directionServiceConcerne;
 
     /*
-     * Éléments du constat
+     * Finding elements
      */
     private List<CauseResponse> causes = new ArrayList<>();
 

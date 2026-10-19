@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/pv-affirmations")
-@CrossOrigin(origins = "*")
 public class PvAffirmationController {
 
     private final CreatePvAffirmationUseCase createUseCase;

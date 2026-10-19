@@ -27,13 +27,13 @@ public class RecommandationDecisionController {
     }
 
     @PutMapping("/{id}/maintien")
-    public ResponseEntity<RecommandationResponse> decider(
+    public ResponseEntity<RecommandationResponse> decide(
             @PathVariable Long id,
             @RequestBody
                     DecisionMaintienRecommandationRequest request) {
 
         return ResponseEntity.ok(
-                deciderMaintienRecommandationUseCase.decider(
+                deciderMaintienRecommandationUseCase.decide(
                         id,
                         request
                 )

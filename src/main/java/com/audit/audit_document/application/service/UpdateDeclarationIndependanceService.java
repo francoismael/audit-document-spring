@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,17 +40,17 @@ public class UpdateDeclarationIndependanceService
 
         DeclarationIndependance declaration =
                 declarationRepository.findById(id)
-                        .orElseThrow(() -> new RuntimeException(
+                        .orElseThrow(() -> new ResourceNotFoundException(
                                 "Déclaration d'indépendance introuvable : " + id));
 
         Mission mission =
                 missionRepository.findById(request.getMissionId())
-                        .orElseThrow(() -> new RuntimeException(
+                        .orElseThrow(() -> new ResourceNotFoundException(
                                 "Mission introuvable : " + request.getMissionId()));
 
         Personne personne =
                 personneRepository.findById(request.getPersonneId())
-                        .orElseThrow(() -> new RuntimeException(
+                        .orElseThrow(() -> new ResourceNotFoundException(
                                 "Personne introuvable : " + request.getPersonneId()));
 
         declaration.setMission(mission);

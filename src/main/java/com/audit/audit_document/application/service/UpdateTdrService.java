@@ -1,5 +1,7 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ConflictException;
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.dto.CreateTdrRequest;
 import com.audit.audit_document.application.dto.ObjectifRequest;
 import com.audit.audit_document.application.dto.ObjectifResponse;
@@ -52,7 +54,7 @@ public class UpdateTdrService
         Tdr tdr =
                 tdrRepository.findById(id)
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "TDR introuvable : " + id));
 
         /*
@@ -62,7 +64,7 @@ public class UpdateTdrService
                 missionRepository.findById(
                         request.getMissionId())
                         .orElseThrow(() ->
-                                new RuntimeException(
+                                new ResourceNotFoundException(
                                         "Mission introuvable : "
                                         + request.getMissionId()));
 
@@ -76,7 +78,7 @@ public class UpdateTdrService
             if (tdrRepository.existsByMissionId(
                     request.getMissionId())) {
 
-                throw new RuntimeException(
+                throw new ConflictException(
                         "Un TDR existe déjà pour cette mission.");
             }
         }
@@ -166,7 +168,7 @@ public class UpdateTdrService
                      */
                     if (existingObjectif == null) {
 
-                        throw new RuntimeException(
+                        throw new ResourceNotFoundException(
                                 "Objectif introuvable ou "
                                 + "n'appartenant pas à ce TDR : "
                                 + objectifRequest.getId());
@@ -400,7 +402,7 @@ public class UpdateTdrService
                 tdr.getLivrables());
 
         /*
-         * Objectifs
+         * Objectives
          */
         List<ObjectifResponse> objectifResponses =
                 new ArrayList<>();

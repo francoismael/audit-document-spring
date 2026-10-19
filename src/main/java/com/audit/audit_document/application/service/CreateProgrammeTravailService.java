@@ -1,5 +1,7 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ConflictException;
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.dto.CreateProgrammeTravailRequest;
 import com.audit.audit_document.application.dto.LigneProgrammeRequest;
 import com.audit.audit_document.application.dto.LigneProgrammeResponse;
@@ -48,10 +50,10 @@ public class CreateProgrammeTravailService
 
         Mission mission = missionRepository.findById(request.getMissionId())
                 .orElseThrow(() ->
-                        new RuntimeException("Mission introuvable"));
+                        new ResourceNotFoundException("Mission introuvable"));
 
         if (programmeRepository.existsByMissionId(mission.getId())) {
-            throw new RuntimeException(
+            throw new ConflictException(
                     "Un programme de travail existe déjà pour cette mission"
             );
         }
@@ -94,7 +96,7 @@ public class CreateProgrammeTravailService
 
         Objectif objectif = objectifRepository.findById(objectifId)
                 .orElseThrow(() ->
-                        new RuntimeException("Objectif introuvable"));
+                        new ResourceNotFoundException("Objectif introuvable"));
 
         Tdr tdr = objectif.getTdr();
 
@@ -102,7 +104,7 @@ public class CreateProgrammeTravailService
                 tdr.getMission() == null ||
                 !tdr.getMission().getId().equals(mission.getId())) {
 
-            throw new RuntimeException(
+            throw new IllegalArgumentException(
                     "L'objectif n'appartient pas au TDR de cette mission"
             );
         }

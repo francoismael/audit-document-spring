@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.usecases.DeleteStructureUseCase;
 import com.audit.audit_document.domain.entity.Structure;
 import com.audit.audit_document.domain.repository.StructureRepository;
@@ -22,7 +23,7 @@ public class DeleteStructureService implements DeleteStructureUseCase {
 
         Structure structure = structureRepository.findById(id)
                 .orElseThrow(() ->
-                        new RuntimeException(
+                        new ResourceNotFoundException(
                                 "Structure introuvable avec l'id : " + id
                         )
                 );

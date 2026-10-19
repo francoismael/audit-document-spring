@@ -72,30 +72,30 @@ public class GetAvancementMissionsService
                 missionRepository.findAll();
 
         /*
-         * On prépare une liste d'identifiants de missions
-         * pour chaque type de document.
+         * Collect the IDs of the missions that already have
+         * each type of document.
          */
 
         Set<Long> missionsAvecTdr =
-                getMissionsAvecTdr();
+                findMissionIdsWithTdr();
 
         Set<Long> missionsAvecProgramme =
-                getMissionsAvecProgramme();
+                findMissionIdsWithProgramme();
 
         Set<Long> missionsAvecTest =
-                getMissionsAvecTest();
+                findMissionIdsWithTest();
 
         Set<Long> missionsAvecConstat =
-                getMissionsAvecConstat();
+                findMissionIdsWithConstat();
 
         Set<Long> missionsAvecRapport =
-                getMissionsAvecRapport();
+                findMissionIdsWithRapport();
 
         Set<Long> missionsAvecPvAffirmation =
-                getMissionsAvecPvAffirmation();
+                findMissionIdsWithPvAffirmation();
 
         Set<Long> missionsAvecPvCloture =
-                getMissionsAvecPvCloture();
+                findMissionIdsWithPvCloture();
 
         List<AvancementMissionResponse> responses =
                 new ArrayList<>();
@@ -162,7 +162,7 @@ public class GetAvancementMissionsService
                             / DOCUMENTS_ATTENDUS;
 
             /*
-             * Arrondi à deux décimales.
+             * Round to two decimals.
              */
             pourcentage =
                     Math.round(pourcentage * 100.0)
@@ -211,7 +211,7 @@ public class GetAvancementMissionsService
         return responses;
     }
 
-    private Set<Long> getMissionsAvecTdr() {
+    private Set<Long> findMissionIdsWithTdr() {
 
         List<Tdr> tdrs =
                 tdrRepository.findAll();
@@ -232,7 +232,7 @@ public class GetAvancementMissionsService
         return missionIds;
     }
 
-    private Set<Long> getMissionsAvecProgramme() {
+    private Set<Long> findMissionIdsWithProgramme() {
 
         List<com.audit.audit_document.domain.entity.ProgrammeTravail>
                 programmes =
@@ -255,7 +255,7 @@ public class GetAvancementMissionsService
         return missionIds;
     }
 
-    private Set<Long> getMissionsAvecTest() {
+    private Set<Long> findMissionIdsWithTest() {
 
         List<Test> tests =
                 testRepository.findAll();
@@ -294,7 +294,7 @@ public class GetAvancementMissionsService
         return missionIds;
     }
 
-    private Set<Long> getMissionsAvecConstat() {
+    private Set<Long> findMissionIdsWithConstat() {
 
         List<Constat> constats =
                 constatRepository.findAll();
@@ -339,7 +339,7 @@ public class GetAvancementMissionsService
         return missionIds;
     }
 
-    private Set<Long> getMissionsAvecRapport() {
+    private Set<Long> findMissionIdsWithRapport() {
 
         List<RapportAudit> rapports =
                 rapportAuditRepository.findAll();
@@ -360,7 +360,7 @@ public class GetAvancementMissionsService
         return missionIds;
     }
 
-    private Set<Long> getMissionsAvecPvAffirmation() {
+    private Set<Long> findMissionIdsWithPvAffirmation() {
 
     Set<Long> missionIds =
             new HashSet<>();
@@ -386,7 +386,7 @@ public class GetAvancementMissionsService
     return missionIds;
 }
 
-    private Set<Long> getMissionsAvecPvCloture() {
+    private Set<Long> findMissionIdsWithPvCloture() {
 
         List<Reunion> reunions =
                 reunionRepository.findAll();

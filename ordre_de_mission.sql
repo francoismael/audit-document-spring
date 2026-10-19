@@ -644,6 +644,83 @@ CREATE TABLE pv_affirmation_ligne (
         UNIQUE (pv_affirmation_id, constat_id)
 );
 
+CREATE TABLE document_type (
+    id BIGSERIAL PRIMARY KEY,
+
+    code VARCHAR(100) NOT NULL UNIQUE,
+
+    nom VARCHAR(255) NOT NULL,
+
+    description TEXT,
+
+    actif BOOLEAN NOT NULL DEFAULT TRUE,
+
+    date_creation TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE document_template (
+    id BIGSERIAL PRIMARY KEY,
+
+    document_type_id BIGINT NOT NULL,
+
+    nom_fichier_original VARCHAR(255) NOT NULL,
+
+    nom_fichier_stockage VARCHAR(255) NOT NULL UNIQUE,
+
+    chemin_fichier VARCHAR(500) NOT NULL,
+
+    type_mime VARCHAR(150),
+
+    taille BIGINT NOT NULL,
+
+    version INTEGER NOT NULL DEFAULT 1,
+
+    actif BOOLEAN NOT NULL DEFAULT TRUE,
+
+    date_upload TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_document_template_type
+        FOREIGN KEY (document_type_id)
+        REFERENCES document_type(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE document_field (
+    id BIGSERIAL PRIMARY KEY,
+
+    document_type_id BIGINT NOT NULL,
+
+    nom VARCHAR(100) NOT NULL,
+
+    libelle VARCHAR(255) NOT NULL,
+
+    type VARCHAR(30) NOT NULL,
+
+    obligatoire BOOLEAN NOT NULL DEFAULT FALSE,
+
+    ordre INTEGER NOT NULL,
+
+    CONSTRAINT fk_document_field_document_type
+        FOREIGN KEY (document_type_id)
+        REFERENCES document_type(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT uq_document_field_nom
+        UNIQUE (document_type_id, nom),
+
+    CONSTRAINT chk_document_field_type
+        CHECK (
+            type IN (
+                'TEXT',
+                'TEXTAREA',
+                'DATE',
+                'NUMBER',
+                'BOOLEAN'
+            )
+        )
+);
+
 INSERT INTO structure (nom, descriptions)
 VALUES
 ('Direction Générale des Finances', 'Structure chargée de la gestion financière'),

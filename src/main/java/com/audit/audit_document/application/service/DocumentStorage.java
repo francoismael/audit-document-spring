@@ -41,13 +41,13 @@ public class DocumentStorage {
                 document.getCheminFichier());
     }
 
-    public Path saveGenerated(byte[] content) throws IOException {
+    public Path saveGenerated(byte[] content, String extension) throws IOException {
 
         Path directory = directory(generatedDirectory);
 
         Files.createDirectories(directory);
 
-        Path target = directory.resolve(UUID.randomUUID() + ".docx");
+        Path target = directory.resolve(UUID.randomUUID() + extension);
 
         Files.write(target, content);
 

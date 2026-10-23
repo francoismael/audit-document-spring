@@ -2,6 +2,7 @@ package com.audit.audit_document.application.service;
 
 import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.dto.GeneratedDocument;
+import com.audit.audit_document.application.port.PdfConverter;
 import com.audit.audit_document.application.usecases.GenerateDocumentUseCase;
 import com.audit.audit_document.domain.entity.DocumentField;
 import com.audit.audit_document.domain.entity.DocumentGenere;
@@ -60,6 +61,8 @@ public class GenerateDocumentService
     private static final DateTimeFormatter FILE_DATE =
             DateTimeFormatter.ofPattern("yyyyMMdd");
 
+    private static final String PDF_EXTENSION = ".pdf";
+
     private final DocumentTypeRepository documentTypeRepository;
 
     private final DocumentTemplateRepository
@@ -77,6 +80,8 @@ public class GenerateDocumentService
 
     private final DocumentStorage documentStorage;
 
+    private final PdfConverter pdfConverter;
+
     public GenerateDocumentService(
             DocumentTypeRepository documentTypeRepository,
             DocumentTemplateRepository documentTemplateRepository,
@@ -84,7 +89,8 @@ public class GenerateDocumentService
             DocumentGenereRepository documentGenereRepository,
             MissionRepository missionRepository,
             ObjectMapper objectMapper,
-            DocumentStorage documentStorage) {
+            DocumentStorage documentStorage,
+            PdfConverter pdfConverter) {
 
         this.documentTypeRepository =
                 documentTypeRepository;
@@ -106,6 +112,9 @@ public class GenerateDocumentService
 
         this.documentStorage =
                 documentStorage;
+
+        this.pdfConverter =
+                pdfConverter;
     }
 
     @Override
@@ -190,7 +199,8 @@ public class GenerateDocumentService
 
             document.write(outputStream);
 
-            byte[] content = outputStream.toByteArray();
+            // The Word template is filled first, then turned into the PDF that users receive.
+            byte[] content = pdfConverter.convertDocxToPdf(outputStream.toByteArray());
             String fileName = buildFileName(documentType);
 
             DocumentGenere documentGenere =
@@ -205,6 +215,7 @@ public class GenerateDocumentService
             return new GeneratedDocument(
                     documentGenere.getId(),
                     fileName,
+                    GeneratedDocument.PDF_CONTENT_TYPE,
                     content);
 
         } catch (IOException e) {
@@ -223,7 +234,7 @@ public class GenerateDocumentService
             byte[] content,
             Map<String, Object> values) throws IOException {
 
-        Path target = documentStorage.saveGenerated(content);
+        Path target = documentStorage.saveGenerated(content, PDF_EXTENSION);
 
         DocumentGenere documentGenere = new DocumentGenere();
 
@@ -479,6 +490,6 @@ public class GenerateDocumentService
         return baseName.replaceAll("[^A-Za-z0-9_-]", "_")
                 + "_"
                 + LocalDate.now().format(FILE_DATE)
-                + ".docx";
+                + PDF_EXTENSION;
     }
 }

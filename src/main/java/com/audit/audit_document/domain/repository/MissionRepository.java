@@ -16,4 +16,6 @@ public interface MissionRepository {
     void deleteById(Long id);
 
     long getNextNumero();
+
+    boolean existsByNumero(String numero);
 }

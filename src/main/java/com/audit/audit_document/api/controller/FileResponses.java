@@ -8,15 +8,11 @@ import org.springframework.http.ResponseEntity;
 
 import java.nio.charset.StandardCharsets;
 
-final class DocxResponses {
+final class FileResponses {
 
     static final String DOCUMENT_ID_HEADER = "X-Document-Id";
 
-    private static final MediaType DOCX_MEDIA_TYPE =
-            MediaType.parseMediaType(
-                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-
-    private DocxResponses() {
+    private FileResponses() {
     }
 
     static ResponseEntity<byte[]> attachment(GeneratedDocument document) {
@@ -33,7 +29,7 @@ final class DocxResponses {
                         .header(
                                 HttpHeaders.CONTENT_DISPOSITION,
                                 contentDisposition.toString())
-                        .contentType(DOCX_MEDIA_TYPE);
+                        .contentType(MediaType.parseMediaType(document.getContentType()));
 
         if (document.getId() != null) {
 

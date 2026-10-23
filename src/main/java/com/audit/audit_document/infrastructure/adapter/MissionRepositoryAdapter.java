@@ -40,4 +40,9 @@ public class MissionRepositoryAdapter implements MissionRepository {
     public long getNextNumero() {
     return repository.getNextNumero();
     }
+
+    @Override
+    public boolean existsByNumero(String numero) {
+        return repository.existsByNumero(numero);
+    }
 }

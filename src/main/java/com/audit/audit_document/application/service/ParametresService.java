@@ -35,7 +35,7 @@ public class ParametresService implements GetParametresUseCase {
         response.setDossierDocumentsGeneres(generatedDirectory);
         response.setTailleMaxFichier(maxFileSize);
         response.setFormatsModeles(Collections.singletonList(".docx"));
-        response.setFormatsGeneration(Collections.singletonList("DOCX"));
+        response.setFormatsGeneration(Collections.singletonList("PDF"));
         response.setSyntaxeVariables("{{nomDuChamp}}");
         response.setTypesChamps(sortedFieldTypes());
         response.setRolesMission(missionRoles());

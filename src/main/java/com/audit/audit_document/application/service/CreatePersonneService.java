@@ -22,12 +22,30 @@ public class CreatePersonneService implements CreatePersonneUseCase {
 
     public Personne execute(CreatePersonneRequest request){
         Personne personne = new Personne();
-        personne.setNom(request.getNom());
-        personne.setPrenom(request.getPrenom());
-        personne.setMatricule(request.getMatricule());
-        personne.setFonction(request.getFonction());
-        personne.setServices(request.getServices());
+        personne.setNom(requireText(request.getNom(), "Le nom de la personne est obligatoire."));
+        personne.setPrenom(requireText(request.getPrenom(), "Le prénom de la personne est obligatoire."));
+        personne.setMatricule(trimToNull(request.getMatricule()));
+        personne.setFonction(trimToNull(request.getFonction()));
+        personne.setServices(trimToNull(request.getServices()));
 
         return personneRepository.save(personne);
+    }
+
+    private static String requireText(String value, String message) {
+        String text = trimToNull(value);
+
+        if (text == null) {
+            throw new IllegalArgumentException(message);
+        }
+
+        return text;
+    }
+
+    private static String trimToNull(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+
+        return value.trim();
     }
 }

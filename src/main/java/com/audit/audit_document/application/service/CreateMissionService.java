@@ -42,6 +42,8 @@ public class CreateMissionService implements CreateMissionUseCase {
     @Transactional
     public Mission execute(CreateMissionRequest request) {
 
+        MissionRequestValidator.validate(request);
+
         // Find the structure
         Structure structure = structureRepository
                 .findById(request.getStructureId())
@@ -51,9 +53,13 @@ public class CreateMissionService implements CreateMissionUseCase {
         // Create mission
         Mission mission = new Mission();
 
-        // Generate mission number automatically
-        long number = missionRepository.getNextNumero();
-        String numero = String.format("%03d", number);
+        // Generate mission number automatically.
+        // Numbers entered by hand in the database (for example 007) are skipped.
+        String numero;
+
+        do {
+            numero = String.format("%03d", missionRepository.getNextNumero());
+        } while (missionRepository.existsByNumero(numero));
 
         mission.setNumero(numero);
 

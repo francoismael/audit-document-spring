@@ -32,14 +32,18 @@ public class UpdateTdrService
     private final MissionRepository missionRepository;
     private final ObjectifRepository objectifRepository;
 
+    private final MissionDocumentRules missionDocumentRules;
+
     public UpdateTdrService(
             TdrRepository tdrRepository,
             MissionRepository missionRepository,
-            ObjectifRepository objectifRepository) {
+            ObjectifRepository objectifRepository,
+            MissionDocumentRules missionDocumentRules) {
 
         this.tdrRepository = tdrRepository;
         this.missionRepository = missionRepository;
         this.objectifRepository = objectifRepository;
+        this.missionDocumentRules = missionDocumentRules;
     }
 
     @Override
@@ -47,6 +51,10 @@ public class UpdateTdrService
     public TdrResponse execute(
             Long id,
             CreateTdrRequest request) {
+
+        missionDocumentRules.requireMission(request.getMissionId());
+
+        missionDocumentRules.checkObjectifs(request.getObjectifs());
 
         /*
          * 1. Find the existing TDR
@@ -114,6 +122,9 @@ public class UpdateTdrService
 
         tdr.setLivrables(
                 request.getLivrables());
+
+        tdr.setDateTdr(
+                request.getDateTdr());
 
         /*
          * 6. Get existing objectives
@@ -400,6 +411,9 @@ public class UpdateTdrService
 
         response.setLivrables(
                 tdr.getLivrables());
+
+        response.setDateTdr(
+                tdr.getDateTdr());
 
         /*
          * Objectives

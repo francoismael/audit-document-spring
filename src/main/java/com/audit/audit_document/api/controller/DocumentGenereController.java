@@ -54,7 +54,7 @@ public class DocumentGenereController {
 
         GeneratedDocument document = downloadUseCase.download(id);
 
-        return DocxResponses.attachment(document);
+        return FileResponses.attachment(document);
     }
 
     @DeleteMapping("/{id}")

@@ -101,6 +101,7 @@ public class DocumentGenereService
             return new GeneratedDocument(
                     document.getId(),
                     document.getNomFichier(),
+                    GeneratedDocument.contentTypeOf(document.getNomFichier()),
                     Files.readAllBytes(path));
 
         } catch (IOException e) {

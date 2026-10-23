@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.domain.exception.ConflictException;
 import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import com.audit.audit_document.application.dto.CreateDocumentFieldRequest;
 import com.audit.audit_document.application.dto.CreateDocumentFieldsRequest;
@@ -24,6 +25,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,6 +40,17 @@ public class DocumentFieldService
     private final DocumentFieldRepository documentFieldRepository;
 
     private final DocumentTypeRepository documentTypeRepository;
+
+    /*
+     * Same pattern as the {{ variables }} of a Word template,
+     * so that every field can be used in the template.
+     */
+    private static final Pattern NAME_PATTERN =
+            Pattern.compile("[A-Za-z0-9_]+");
+
+    private static final String INVALID_NAME_MESSAGE =
+            "Le nom technique du champ ne doit contenir que des lettres, "
+                    + "des chiffres et des soulignés (_), sans espace";
 
     public static final Set<String> TYPES_AUTORISES =
             new HashSet<>(
@@ -80,6 +93,11 @@ public class DocumentFieldService
                         .orElseThrow(() ->
                                 new ResourceNotFoundException(
                                         "Type de document introuvable"));
+
+        ensureNameIsFree(
+                request.getDocumentTypeId(),
+                request.getNom(),
+                null);
 
         DocumentField documentField =
                 new DocumentField();
@@ -320,6 +338,11 @@ public class DocumentFieldService
                                 new ResourceNotFoundException(
                                         "Type de document introuvable"));
 
+        ensureNameIsFree(
+                request.getDocumentTypeId(),
+                request.getNom(),
+                id);
+
         /*
          * Check whether the field is moved to another
          * document type.
@@ -453,6 +476,28 @@ public class DocumentFieldService
     }
 
 
+    private void ensureNameIsFree(
+            Long documentTypeId,
+            String nom,
+            Long excludedFieldId) {
+
+        boolean taken =
+                documentFieldRepository
+                        .findByDocumentTypeId(documentTypeId)
+                        .stream()
+                        .anyMatch(field ->
+                                field.getNom().equalsIgnoreCase(nom)
+                                        && !field.getId().equals(excludedFieldId));
+
+        if (taken) {
+
+            throw new ConflictException(
+                    "Un champ nommé « " + nom
+                            + " » existe déjà pour ce type de document");
+        }
+    }
+
+
     private void validateRequest(
             CreateDocumentFieldRequest request) {
 
@@ -480,6 +525,12 @@ public class DocumentFieldService
 
             throw new IllegalArgumentException(
                     "Le libellé du champ est obligatoire");
+        }
+
+        if (!NAME_PATTERN.matcher(request.getNom().trim()).matches()) {
+
+            throw new IllegalArgumentException(
+                    INVALID_NAME_MESSAGE);
         }
 
         if (request.getType() == null
@@ -533,6 +584,12 @@ public class DocumentFieldService
 
             throw new IllegalArgumentException(
                     "Le libellé du champ est obligatoire");
+        }
+
+        if (!NAME_PATTERN.matcher(request.getNom().trim()).matches()) {
+
+            throw new IllegalArgumentException(
+                    INVALID_NAME_MESSAGE);
         }
 
         if (request.getType() == null

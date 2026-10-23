@@ -31,17 +31,21 @@ public class UpdateReunionService
     private final MissionRepository missionRepository;
     private final PersonneRepository personneRepository;
 
+    private final MissionDocumentRules missionDocumentRules;
+
     public UpdateReunionService(
             ReunionRepository reunionRepository,
             ReunionPersonneRepository reunionPersonneRepository,
             MissionRepository missionRepository,
-            PersonneRepository personneRepository) {
+            PersonneRepository personneRepository,
+            MissionDocumentRules missionDocumentRules) {
 
         this.reunionRepository = reunionRepository;
         this.reunionPersonneRepository =
                 reunionPersonneRepository;
         this.missionRepository = missionRepository;
         this.personneRepository = personneRepository;
+        this.missionDocumentRules = missionDocumentRules;
     }
 
     @Override
@@ -49,6 +53,12 @@ public class UpdateReunionService
     public ReunionResponse execute(
             Long id,
             CreateReunionRequest request) {
+
+        missionDocumentRules.requireMission(request.getMissionId());
+
+        missionDocumentRules.checkReunionParticipants(
+                request.getMissionId(),
+                request.getParticipants());
 
         validateType(request.getType());
 

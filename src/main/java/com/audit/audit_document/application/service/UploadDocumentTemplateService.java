@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -96,11 +97,15 @@ public class UploadDocumentTemplateService
                     directory.resolve(
                             storedFilename);
 
-            Files.copy(
-                    file.getInputStream(),
-                    target,
-                    StandardCopyOption.REPLACE_EXISTING
-            );
+            // The stream must be closed, otherwise Tomcat cannot delete its temporary upload file.
+            try (InputStream content = file.getInputStream()) {
+
+                Files.copy(
+                        content,
+                        target,
+                        StandardCopyOption.REPLACE_EXISTING
+                );
+            }
 
             /*
              * Deactivate the previous active template.

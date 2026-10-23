@@ -20,7 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UpdateMissionService implements UpdateMissionUseCase {
@@ -47,6 +49,8 @@ public class UpdateMissionService implements UpdateMissionUseCase {
     public MissionResponse execute(
             Long id,
             CreateMissionRequest request) {
+
+        MissionRequestValidator.validate(request);
 
         // find mission
         Mission mission = missionRepository
@@ -76,36 +80,7 @@ public class UpdateMissionService implements UpdateMissionUseCase {
         Mission missionUpdated =
                 missionRepository.save(mission);
 
-        missionPersonneRepository.deleteByMissionId(id);
-
-        // add new personne
-        if (request.getPersonnes() != null) {
-
-            for (MissionPersonneRequest personneRequest
-                    : request.getPersonnes()) {
-
-                Personne personne = personneRepository
-                        .findById(personneRequest.getPersonneId())
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "Personne introuvable : "
-                                                + personneRequest.getPersonneId()
-                                ));
-
-                MissionPersonne missionPersonne =
-                        new MissionPersonne();
-
-                missionPersonne.setMission(missionUpdated);
-                missionPersonne.setPersonne(personne);
-                missionPersonne.setRoles(
-                        MissionRole.fromValue(personneRequest.getRoles()).name()
-                );
-
-                missionPersonneRepository.save(
-                        missionPersonne
-                );
-            }
-        }
+        updateTeam(missionUpdated, request.getPersonnes());
 
         // create response
         MissionResponse response = new MissionResponse();
@@ -141,6 +116,10 @@ public class UpdateMissionService implements UpdateMissionUseCase {
             MissionPersonneResponse personneResponse =
                     new MissionPersonneResponse();
 
+            personneResponse.setMissionPersonneId(
+                    missionPersonne.getId()
+            );
+
             personneResponse.setPersonneId(
                     missionPersonne.getPersonne().getId()
             );
@@ -171,5 +150,70 @@ public class UpdateMissionService implements UpdateMissionUseCase {
         response.setPersonnes(personnes);
 
         return response;
+    }
+
+    /*
+     * Applies the new team without recreating the members that stay:
+     * their missionPersonneId is used by the business documents (tests, PV d'affirmation...).
+     */
+    private void updateTeam(
+            Mission mission,
+            List<MissionPersonneRequest> requestedMembers) {
+
+        List<MissionPersonneRequest> requested =
+                requestedMembers != null
+                        ? requestedMembers
+                        : new ArrayList<>();
+
+        Set<String> requestedKeys = new HashSet<>();
+
+        for (MissionPersonneRequest member : requested) {
+            requestedKeys.add(memberKey(
+                    member.getPersonneId(),
+                    MissionRole.fromValue(member.getRoles()).name()));
+        }
+
+        Set<String> existingKeys = new HashSet<>();
+
+        for (MissionPersonne existing
+                : missionPersonneRepository.findByMissionId(mission.getId())) {
+
+            String key = memberKey(
+                    existing.getPersonne().getId(),
+                    existing.getRoles());
+
+            if (requestedKeys.contains(key)) {
+                existingKeys.add(key);
+            } else {
+                missionPersonneRepository.deleteById(existing.getId());
+            }
+        }
+
+        for (MissionPersonneRequest member : requested) {
+
+            String role = MissionRole.fromValue(member.getRoles()).name();
+
+            if (existingKeys.contains(memberKey(member.getPersonneId(), role))) {
+                continue;
+            }
+
+            Personne personne = personneRepository
+                    .findById(member.getPersonneId())
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException(
+                                    "Personne introuvable : "
+                                            + member.getPersonneId()));
+
+            MissionPersonne missionPersonne = new MissionPersonne();
+            missionPersonne.setMission(mission);
+            missionPersonne.setPersonne(personne);
+            missionPersonne.setRoles(role);
+
+            missionPersonneRepository.save(missionPersonne);
+        }
+    }
+
+    private static String memberKey(Long personneId, String role) {
+        return personneId + ":" + role;
     }
 }

@@ -73,6 +73,10 @@ public class GetAllMissionService implements GetAllMissionUseCase {
                 MissionPersonneResponse personneResponse =
                         new MissionPersonneResponse();
 
+                personneResponse.setMissionPersonneId(
+                        missionPersonne.getId()
+                );
+
                 personneResponse.setPersonneId(
                         missionPersonne.getPersonne().getId()
                 );

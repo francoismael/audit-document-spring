@@ -101,6 +101,9 @@ public class GetTdrByIdService
         response.setLivrables(
                 tdr.getLivrables());
 
+        response.setDateTdr(
+                tdr.getDateTdr());
+
         // Objectives
         List<ObjectifResponse> objectifResponses =
                 new ArrayList<>();

@@ -27,19 +27,29 @@ public class CreateReunionService implements CreateReunionUseCase {
     private final MissionRepository missionRepository;
     private final PersonneRepository personneRepository;
 
+    private final MissionDocumentRules missionDocumentRules;
+
     public CreateReunionService(
             ReunionRepository reunionRepository,
             MissionRepository missionRepository,
-            PersonneRepository personneRepository) {
+            PersonneRepository personneRepository,
+            MissionDocumentRules missionDocumentRules) {
 
         this.reunionRepository = reunionRepository;
         this.missionRepository = missionRepository;
         this.personneRepository = personneRepository;
+        this.missionDocumentRules = missionDocumentRules;
     }
 
     @Override
     @Transactional
     public ReunionResponse execute(CreateReunionRequest request) {
+
+        missionDocumentRules.requireMission(request.getMissionId());
+
+        missionDocumentRules.checkReunionParticipants(
+                request.getMissionId(),
+                request.getParticipants());
 
         validateType(request.getType());
 

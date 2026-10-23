@@ -1,6 +1,7 @@
 package com.audit.audit_document.domain.entity;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,6 +52,10 @@ public class Tdr {
 
     @Column(columnDefinition = "TEXT")
     private String livrables;
+
+    // Date written at the top of the document ("Antananarivo, le ...").
+    @Column(name = "date_tdr")
+    private LocalDate dateTdr;
 
     @OneToMany(
         mappedBy = "tdr",
@@ -158,5 +163,13 @@ public class Tdr {
     public void removeObjectif(Objectif objectif) {
         objectifs.remove(objectif);
         objectif.setTdr(null);
+    }
+
+    public LocalDate getDateTdr() {
+        return dateTdr;
+    }
+
+    public void setDateTdr(LocalDate dateTdr) {
+        this.dateTdr = dateTdr;
     }
 }

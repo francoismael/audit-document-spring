@@ -8,6 +8,7 @@ Backend Spring Boot de l'application de génération de documents d'audit intern
 
 - Spring Boot 2.7, **Java 8** (pas de `var`, de `record` ni de `List.of`), JPA/Hibernate (`javax.persistence`), PostgreSQL.
 - Apache POI (`poi-ooxml`) pour lire et remplir les modèles Word (`.docx`).
+- **LibreOffice** (mode headless) pour convertir le document rempli en PDF : il doit être installé sur la machine qui exécute le backend. Le chemin de `soffice` se règle avec `app.pdf.soffice-path` dans `application.properties`.
 - Spring Security et JWT (`jjwt`) : toute l'API, sauf `/api/auth/**`, exige un token.
 - Base de données : `audit_interne`.
 
@@ -26,11 +27,13 @@ api/controller/          contrôleurs REST (+ exeption/GlobalExceptionHandler)
 application/dto/         requêtes et réponses de l'API
 application/usecases/    interfaces des cas d'usage
 application/service/     implémentations des cas d'usage
+application/port/        interfaces vers les outils externes (PdfConverter)
 domain/entity/           entités JPA et enums métier (MissionRole)
 domain/repository/       interfaces de repository du domaine
 infrastructure/jpa/      interfaces Spring Data JPA
 infrastructure/adapter/  implémentations des repositories du domaine
 infrastructure/config/   configuration (CORS global)
+infrastructure/pdf/      conversion DOCX → PDF avec LibreOffice (LibreOfficePdfConverter)
 infrastructure/security/ Spring Security, filtre JWT, encodage des mots de passe
 ```
 
@@ -38,6 +41,8 @@ infrastructure/security/ Spring Security, filtre JWT, encodage des mots de passe
 - Le CORS est global (`CorsConfig`) : ne pas ajouter `@CrossOrigin` sur les contrôleurs.
 - Les fichiers (modèles et documents générés) se lisent et s'écrivent uniquement via `DocumentStorage`, jamais avec le chemin absolu enregistré en base.
 - Les modèles Word utilisent la syntaxe `{{nomDuChamp}}`. Le nom du champ doit correspondre à `DocumentField.nom`.
+- La génération produit un **PDF** : le modèle `.docx` est rempli avec POI, puis converti par `PdfConverter`. Les conversions sont faites une par une (LibreOffice ne supporte pas deux conversions en parallèle avec le même profil). Compter environ 15 s au premier appel, puis 3 à 6 s.
+- Les documents de l'historique générés avant le passage au PDF sont des `.docx` : `GeneratedDocument.contentTypeOf()` donne le bon type au téléchargement.
 - Les rôles de mission sont fixes (`MissionRole`) : `DIRECTEUR_AUDIT_INTERNE`, `CHEF_MISSION`, `SUPERVISEUR`, `AUDITEUR`, `POINT_FOCAL`.
 
 ## Erreurs

@@ -23,8 +23,20 @@ public class CreateStructureService implements CreateStructureUseCase {
 
         Structure structure = new Structure();
 
-        structure.setNom(request.getNom());
-        structure.setDescriptions(request.getDescriptions());
+        String nom = request.getNom() == null ? "" : request.getNom().trim();
+
+        if (nom.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Le nom de la structure est obligatoire.");
+        }
+
+        String descriptions = request.getDescriptions() == null
+                ? null
+                : request.getDescriptions().trim();
+
+        structure.setNom(nom);
+        structure.setDescriptions(
+                descriptions == null || descriptions.isEmpty() ? null : descriptions);
 
         return structureRepository.save(structure);
     }

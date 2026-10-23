@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.dto;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class TdrResponse {
@@ -33,6 +34,8 @@ public class TdrResponse {
     private String resultatsAttendus;
 
     private String livrables;
+
+    private LocalDate dateTdr;
 
     private List<ObjectifResponse> objectifs;
 
@@ -165,5 +168,13 @@ public class TdrResponse {
 
     public void setObjectifs(List<ObjectifResponse> objectifs) {
         this.objectifs = objectifs;
+    }
+
+    public LocalDate getDateTdr() {
+        return dateTdr;
+    }
+
+    public void setDateTdr(LocalDate dateTdr) {
+        this.dateTdr = dateTdr;
     }
 }

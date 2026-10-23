@@ -21,20 +21,30 @@ public class CreateDeclarationIndependanceService
     private final MissionRepository missionRepository;
     private final PersonneRepository personneRepository;
 
+    private final MissionDocumentRules missionDocumentRules;
+
     public CreateDeclarationIndependanceService(
             DeclarationIndependanceRepository declarationRepository,
             MissionRepository missionRepository,
-            PersonneRepository personneRepository) {
+            PersonneRepository personneRepository,
+            MissionDocumentRules missionDocumentRules) {
 
         this.declarationRepository = declarationRepository;
         this.missionRepository = missionRepository;
         this.personneRepository = personneRepository;
+        this.missionDocumentRules = missionDocumentRules;
     }
 
     @Override
     @Transactional
     public DeclarationIndependanceResponse execute(
         CreateDeclarationIndependanceRequest request) {
+
+        missionDocumentRules.checkDeclaration(
+                request.getMissionId(),
+                request.getPersonneId(),
+                request.getDateDeclaration(),
+                null);
 
     Mission mission = missionRepository
             .findById(request.getMissionId())

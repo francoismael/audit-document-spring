@@ -22,14 +22,18 @@ public class UpdateDeclarationIndependanceService
     private final MissionRepository missionRepository;
     private final PersonneRepository personneRepository;
 
+    private final MissionDocumentRules missionDocumentRules;
+
     public UpdateDeclarationIndependanceService(
             DeclarationIndependanceRepository declarationRepository,
             MissionRepository missionRepository,
-            PersonneRepository personneRepository) {
+            PersonneRepository personneRepository,
+            MissionDocumentRules missionDocumentRules) {
 
         this.declarationRepository = declarationRepository;
         this.missionRepository = missionRepository;
         this.personneRepository = personneRepository;
+        this.missionDocumentRules = missionDocumentRules;
     }
 
     @Override
@@ -37,6 +41,12 @@ public class UpdateDeclarationIndependanceService
     public DeclarationIndependanceResponse execute(
             Long id,
             CreateDeclarationIndependanceRequest request) {
+
+        missionDocumentRules.checkDeclaration(
+                request.getMissionId(),
+                request.getPersonneId(),
+                request.getDateDeclaration(),
+                id);
 
         DeclarationIndependance declaration =
                 declarationRepository.findById(id)

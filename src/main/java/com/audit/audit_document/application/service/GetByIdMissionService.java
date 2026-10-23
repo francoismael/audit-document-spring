@@ -61,6 +61,10 @@ public class GetByIdMissionService implements GetByIdMissionUseCase {
             MissionPersonneResponse personneResponse =
                     new MissionPersonneResponse();
 
+            personneResponse.setMissionPersonneId(
+                    missionPersonne.getId()
+            );
+
             personneResponse.setPersonneId(
                     missionPersonne.getPersonne().getId()
             );

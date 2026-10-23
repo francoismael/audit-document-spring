@@ -11,4 +11,6 @@ public interface MissionJpa extends JpaRepository<Mission, Long> {
         nativeQuery = true
     )
     Long getNextNumero();
+
+    boolean existsByNumero(String numero);
 }

@@ -30,19 +30,27 @@ public class CreateTdrService
     private final MissionRepository missionRepository;
     private final ObjectifRepository objectifRepository;
 
+    private final MissionDocumentRules missionDocumentRules;
+
     public CreateTdrService(
             TdrRepository tdrRepository,
             MissionRepository missionRepository,
-            ObjectifRepository objectifRepository) {
+            ObjectifRepository objectifRepository,
+            MissionDocumentRules missionDocumentRules) {
 
         this.tdrRepository = tdrRepository;
         this.missionRepository = missionRepository;
         this.objectifRepository = objectifRepository;
+        this.missionDocumentRules = missionDocumentRules;
     }
 
     @Override
     @Transactional
     public TdrResponse execute(CreateTdrRequest request) {
+
+        missionDocumentRules.requireMission(request.getMissionId());
+
+        missionDocumentRules.checkObjectifs(request.getObjectifs());
 
         /*
          * 1. Check that the mission exists
@@ -95,6 +103,9 @@ public class CreateTdrService
 
         tdr.setLivrables(
                 request.getLivrables());
+
+        tdr.setDateTdr(
+                request.getDateTdr());
 
         /*
          * 4. Save the TDR
@@ -238,6 +249,9 @@ public class CreateTdrService
 
         response.setLivrables(
                 tdr.getLivrables());
+
+        response.setDateTdr(
+                tdr.getDateTdr());
 
         /*
          * Convert the objectives

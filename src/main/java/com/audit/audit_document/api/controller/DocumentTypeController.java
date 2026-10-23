@@ -168,6 +168,6 @@ public class DocumentTypeController {
                         values,
                         missionId);
 
-        return DocxResponses.attachment(document);
+        return FileResponses.attachment(document);
     }
 }

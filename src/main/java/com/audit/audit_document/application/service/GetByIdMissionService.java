@@ -19,12 +19,16 @@ public class GetByIdMissionService implements GetByIdMissionUseCase {
     private final MissionRepository missionRepository;
     private final MissionPersonneRepository missionPersonneRepository;
 
+    private final MissionAccess missionAccess;
+
     public GetByIdMissionService(
             MissionRepository missionRepository,
-            MissionPersonneRepository missionPersonneRepository) {
+            MissionPersonneRepository missionPersonneRepository,
+            MissionAccess missionAccess) {
 
         this.missionRepository = missionRepository;
         this.missionPersonneRepository = missionPersonneRepository;
+        this.missionAccess = missionAccess;
     }
 
     @Override
@@ -35,6 +39,8 @@ public class GetByIdMissionService implements GetByIdMissionUseCase {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Mission introuvable : " + missionId
                 ));
+
+        missionAccess.checkAccess(mission.getId());
 
         MissionResponse response = new MissionResponse();
 
@@ -83,6 +89,10 @@ public class GetByIdMissionService implements GetByIdMissionUseCase {
 
             personneResponse.setServices(
                     missionPersonne.getPersonne().getServices()
+            );
+
+            personneResponse.setSexe(
+                    missionPersonne.getPersonne().getSexe()
             );
 
             personneResponse.setRoles(

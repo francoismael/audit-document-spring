@@ -47,16 +47,20 @@ public class TestService implements
     private final LigneProgrammeRepository ligneProgrammeRepository;
     private final MissionPersonneRepository missionPersonneRepository;
 
+    private final MissionAccess missionAccess;
+
     public TestService(
             TestRepository testRepository,
             EchantillonRepository echantillonRepository,
             LigneProgrammeRepository ligneProgrammeRepository,
-            MissionPersonneRepository missionPersonneRepository) {
+            MissionPersonneRepository missionPersonneRepository,
+            MissionAccess missionAccess) {
 
         this.testRepository = testRepository;
         this.echantillonRepository = echantillonRepository;
         this.ligneProgrammeRepository = ligneProgrammeRepository;
         this.missionPersonneRepository = missionPersonneRepository;
+        this.missionAccess = missionAccess;
     }
 
     // ============================================================
@@ -103,11 +107,13 @@ public class TestService implements
                         ligneProgramme
                 );
 
+        missionAccess.checkAccess(missionId);
+
         Test test = new Test();
 
         /*
          * Automatic test reference.
-         * Example: FT001, FT002, FT003...
+         * Example: FT-001, FT-002, FT-003...
          */
         test.setReference(
                 testRepository.getNextReference()
@@ -199,6 +205,8 @@ public class TestService implements
                                 )
                         );
 
+        missionAccess.checkAccess(missionIdOf(test));
+
         return toResponse(test);
     }
 
@@ -211,7 +219,7 @@ public class TestService implements
     public List<TestResponse> getAll() {
 
         List<Test> tests =
-                testRepository.findAll();
+                missionAccess.keepVisible(testRepository.findAll(), TestService::missionIdOf);
 
         List<TestResponse> responses =
                 new ArrayList<>();
@@ -238,7 +246,7 @@ public class TestService implements
         /*
          * Check that the line exists.
          */
-        ligneProgrammeRepository
+        LigneProgramme ligneProgramme = ligneProgrammeRepository
                 .findById(ligneProgrammeId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -246,6 +254,8 @@ public class TestService implements
                                         + ligneProgrammeId
                         )
                 );
+
+        missionAccess.checkAccess(ligneProgramme.getProgramme().getMission().getId());
 
         List<Test> tests =
                 testRepository.findByLigneProgrammeId(
@@ -284,6 +294,8 @@ public class TestService implements
                                 )
                         );
 
+        missionAccess.checkAccess(missionIdOf(test));
+
         if (request == null) {
             throw new IllegalArgumentException(
                     "Les données du test sont obligatoires."
@@ -319,6 +331,8 @@ public class TestService implements
                 resolveMissionId(
                         ligneProgramme
                 );
+
+        missionAccess.checkAccess(missionId);
 
         /*
          * The programme line can be changed,
@@ -459,6 +473,12 @@ public class TestService implements
     // ============================================================
     // GET THE MISSION OF THE PROGRAMME LINE
     // ============================================================
+
+    // Mission of a saved test: the one of the work programme of its line.
+    static Long missionIdOf(Test test) {
+
+        return test.getLigneProgramme().getProgramme().getMission().getId();
+    }
 
     private Long resolveMissionId(
             LigneProgramme ligneProgramme) {

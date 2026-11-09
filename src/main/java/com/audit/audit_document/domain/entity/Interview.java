@@ -41,6 +41,16 @@ public class Interview {
     @Column(length = 100)
     private String anciennete;
 
+    // Dates of the visas of the sheet (written, supervised, validated).
+    @Column(name = "date_redaction")
+    private LocalDate dateRedaction;
+
+    @Column(name = "date_supervision")
+    private LocalDate dateSupervision;
+
+    @Column(name = "date_validation")
+    private LocalDate dateValidation;
+
     @ManyToOne
     @JoinColumn(name = "redige_par_personne_id")
     private Personne redigeParPersonne;
@@ -159,5 +169,29 @@ public class Interview {
     public void removeQuestion(InterviewQuestion question) {
         questions.remove(question);
         question.setInterview(null);
+    }
+
+    public LocalDate getDateRedaction() {
+        return dateRedaction;
+    }
+
+    public void setDateRedaction(LocalDate dateRedaction) {
+        this.dateRedaction = dateRedaction;
+    }
+
+    public LocalDate getDateSupervision() {
+        return dateSupervision;
+    }
+
+    public void setDateSupervision(LocalDate dateSupervision) {
+        this.dateSupervision = dateSupervision;
+    }
+
+    public LocalDate getDateValidation() {
+        return dateValidation;
+    }
+
+    public void setDateValidation(LocalDate dateValidation) {
+        this.dateValidation = dateValidation;
     }
 }

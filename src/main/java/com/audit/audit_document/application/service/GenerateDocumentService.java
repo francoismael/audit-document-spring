@@ -82,6 +82,8 @@ public class GenerateDocumentService
 
     private final PdfConverter pdfConverter;
 
+    private final MissionAccess missionAccess;
+
     public GenerateDocumentService(
             DocumentTypeRepository documentTypeRepository,
             DocumentTemplateRepository documentTemplateRepository,
@@ -90,7 +92,8 @@ public class GenerateDocumentService
             MissionRepository missionRepository,
             ObjectMapper objectMapper,
             DocumentStorage documentStorage,
-            PdfConverter pdfConverter) {
+            PdfConverter pdfConverter,
+            MissionAccess missionAccess) {
 
         this.documentTypeRepository =
                 documentTypeRepository;
@@ -115,6 +118,7 @@ public class GenerateDocumentService
 
         this.pdfConverter =
                 pdfConverter;
+        this.missionAccess = missionAccess;
     }
 
     @Override
@@ -146,6 +150,10 @@ public class GenerateDocumentService
                                         new ResourceNotFoundException(
                                                 "Mission introuvable : "
                                                         + missionId));
+
+        if (mission != null) {
+            missionAccess.checkAccess(mission.getId());
+        }
 
         Map<String, Object> input =
                 values != null
@@ -246,6 +254,7 @@ public class GenerateDocumentService
         documentGenere.setValeurs(toJson(values));
         documentGenere.setTemplateVersion(template.getVersion());
         documentGenere.setDateGeneration(LocalDateTime.now());
+        documentGenere.setUtilisateurId(missionAccess.currentUser().getId());
 
         return documentGenereRepository.save(documentGenere);
     }

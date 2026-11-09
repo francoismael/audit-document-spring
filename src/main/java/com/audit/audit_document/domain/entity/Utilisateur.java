@@ -14,9 +14,6 @@ public class Utilisateur {
     @Column(nullable = false, unique = true, length = 100)
     private String username;
 
-    @Column(nullable = false, unique = true, length = 255)
-    private String email;
-
     @Column(nullable = false, length = 255)
     private String password;
 
@@ -29,6 +26,11 @@ public class Utilisateur {
 
     @Column(name = "date_creation", nullable = false)
     private LocalDateTime dateCreation;
+
+    // Person of the directory this account belongs to: it decides which missions the account sees.
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "personne_id", unique = true)
+    private Personne personne;
 
     public Utilisateur() {
     }
@@ -47,14 +49,6 @@ public class Utilisateur {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public String getPassword() {
@@ -87,5 +81,17 @@ public class Utilisateur {
 
     public void setDateCreation(LocalDateTime dateCreation) {
         this.dateCreation = dateCreation;
+    }
+
+    public Personne getPersonne() {
+        return personne;
+    }
+
+    public void setPersonne(Personne personne) {
+        this.personne = personne;
+    }
+
+    public boolean isAdmin() {
+        return role == Role.ADMIN;
     }
 }

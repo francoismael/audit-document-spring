@@ -20,10 +20,14 @@ public class GetAllTdrsService
 
     private final TdrRepository tdrRepository;
 
+    private final MissionAccess missionAccess;
+
     public GetAllTdrsService(
-            TdrRepository tdrRepository) {
+            TdrRepository tdrRepository,
+            MissionAccess missionAccess) {
 
         this.tdrRepository = tdrRepository;
+        this.missionAccess = missionAccess;
     }
 
     @Override
@@ -31,7 +35,7 @@ public class GetAllTdrsService
     public List<TdrResponse> execute() {
 
         List<Tdr> tdrs =
-                tdrRepository.findAll();
+                missionAccess.keepVisible(tdrRepository.findAll(), tdr -> tdr.getMission().getId());
 
         List<TdrResponse> responses =
                 new ArrayList<>();

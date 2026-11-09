@@ -31,14 +31,18 @@ public class TableauRecommandationsService
     private final MissionRepository missionRepository;
     private final ReponseRepository reponseRepository;
 
+    private final MissionAccess missionAccess;
+
     public TableauRecommandationsService(
             ConstatRepository constatRepository,
             MissionRepository missionRepository,
-            ReponseRepository reponseRepository) {
+            ReponseRepository reponseRepository,
+            MissionAccess missionAccess) {
 
         this.constatRepository = constatRepository;
         this.missionRepository = missionRepository;
         this.reponseRepository = reponseRepository;
+        this.missionAccess = missionAccess;
     }
 
     @Override
@@ -51,6 +55,8 @@ public class TableauRecommandationsService
                     "La mission est obligatoire."
             );
         }
+
+        missionAccess.checkAccess(missionId);
 
         Mission mission =
                 missionRepository

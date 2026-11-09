@@ -15,10 +15,14 @@ public class GetDeclarationIndependanceService
 
     private final DeclarationIndependanceRepository declarationRepository;
 
+    private final MissionAccess missionAccess;
+
     public GetDeclarationIndependanceService(
-            DeclarationIndependanceRepository declarationRepository) {
+            DeclarationIndependanceRepository declarationRepository,
+            MissionAccess missionAccess) {
 
         this.declarationRepository = declarationRepository;
+        this.missionAccess = missionAccess;
     }
 
     @Override
@@ -34,6 +38,8 @@ public class GetDeclarationIndependanceService
                         );
 
         Mission mission = declaration.getMission();
+
+        missionAccess.checkAccess(mission.getId());
         Personne personne = declaration.getPersonne();
 
         DeclarationIndependanceResponse response =

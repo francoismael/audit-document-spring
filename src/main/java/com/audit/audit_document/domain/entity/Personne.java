@@ -25,6 +25,10 @@ public class Personne {
     @Column(name = "services", length = 255)
     private String services;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private Sexe sexe;
+
     public Personne() {
     }
 
@@ -74,5 +78,13 @@ public class Personne {
 
     public void setServices(String services) {
         this.services = services;
+    }
+
+    public Sexe getSexe() {
+        return sexe;
+    }
+
+    public void setSexe(Sexe sexe) {
+        this.sexe = sexe;
     }
 }

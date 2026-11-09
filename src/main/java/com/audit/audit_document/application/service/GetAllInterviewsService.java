@@ -18,15 +18,18 @@ public class GetAllInterviewsService implements GetAllInterviewsUseCase {
 
     private final InterviewRepository interviewRepository;
 
-    public GetAllInterviewsService(InterviewRepository interviewRepository) {
+    private final MissionAccess missionAccess;
+
+    public GetAllInterviewsService(InterviewRepository interviewRepository, MissionAccess missionAccess) {
         this.interviewRepository = interviewRepository;
+        this.missionAccess = missionAccess;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<InterviewResponse> execute() {
 
-        List<Interview> interviews = interviewRepository.findAll();
+        List<Interview> interviews = missionAccess.keepVisible(interviewRepository.findAll(), interview -> interview.getMission().getId());
 
         List<InterviewResponse> responses = new ArrayList<>();
 
@@ -40,6 +43,9 @@ public class GetAllInterviewsService implements GetAllInterviewsUseCase {
             response.setDateInterview(interview.getDateInterview());
             response.setFonction(interview.getFonction());
             response.setAnciennete(interview.getAnciennete());
+            response.setDateRedaction(interview.getDateRedaction());
+            response.setDateSupervision(interview.getDateSupervision());
+            response.setDateValidation(interview.getDateValidation());
 
             // Mission
             if (interview.getMission() != null) {

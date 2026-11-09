@@ -6,7 +6,9 @@ import java.util.List;
 
 public interface GetDocumentsGeneresUseCase {
 
+    // query: file name, document type or mission (optional).
     List<DocumentGenereResponse> getAll(
             Long documentTypeId,
-            Long missionId);
+            Long missionId,
+            String query);
 }

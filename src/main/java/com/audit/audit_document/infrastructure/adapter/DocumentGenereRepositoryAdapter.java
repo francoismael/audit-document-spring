@@ -102,6 +102,12 @@ public class DocumentGenereRepositoryAdapter
     }
 
     @Override
+    public void detachDocumentType(Long documentTypeId, String code, String nom) {
+
+        jpa.detachDocumentType(documentTypeId, code, nom);
+    }
+
+    @Override
     public void deleteById(Long id) {
 
         jpa.deleteById(id);

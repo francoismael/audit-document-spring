@@ -18,11 +18,15 @@ public class GetMissionPersonnesByMissionService
 
     private final MissionPersonneRepository missionPersonneRepository;
 
+    private final MissionAccess missionAccess;
+
     public GetMissionPersonnesByMissionService(
-            MissionPersonneRepository missionPersonneRepository) {
+            MissionPersonneRepository missionPersonneRepository,
+            MissionAccess missionAccess) {
 
         this.missionPersonneRepository =
                 missionPersonneRepository;
+        this.missionAccess = missionAccess;
     }
 
     @Override
@@ -34,6 +38,8 @@ public class GetMissionPersonnesByMissionService
                     "L'identifiant de la mission est obligatoire."
             );
         }
+
+        missionAccess.checkAccess(missionId);
 
         List<MissionPersonne> missionPersonnes =
                 missionPersonneRepository
@@ -90,6 +96,10 @@ public class GetMissionPersonnesByMissionService
                         missionPersonne
                                 .getPersonne()
                                 .getServices()
+                );
+
+                response.setSexe(
+                        missionPersonne.getPersonne().getSexe()
                 );
             }
 

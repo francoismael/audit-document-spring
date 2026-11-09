@@ -5,5 +5,5 @@ import com.audit.audit_document.application.dto.UtilisateurResponse;
 
 public interface CreateUtilisateurUseCase {
 
-    UtilisateurResponse execute(CreateUtilisateurRequest request);
+    UtilisateurResponse create(CreateUtilisateurRequest request);
 }

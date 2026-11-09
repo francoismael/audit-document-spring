@@ -34,16 +34,20 @@ public class UpdateTdrService
 
     private final MissionDocumentRules missionDocumentRules;
 
+    private final MissionAccess missionAccess;
+
     public UpdateTdrService(
             TdrRepository tdrRepository,
             MissionRepository missionRepository,
             ObjectifRepository objectifRepository,
-            MissionDocumentRules missionDocumentRules) {
+            MissionDocumentRules missionDocumentRules,
+            MissionAccess missionAccess) {
 
         this.tdrRepository = tdrRepository;
         this.missionRepository = missionRepository;
         this.objectifRepository = objectifRepository;
         this.missionDocumentRules = missionDocumentRules;
+        this.missionAccess = missionAccess;
     }
 
     @Override
@@ -64,6 +68,8 @@ public class UpdateTdrService
                         .orElseThrow(() ->
                                 new ResourceNotFoundException(
                                         "TDR introuvable : " + id));
+
+        missionAccess.checkAccess(tdr.getMission().getId());
 
         /*
          * 2. Find the mission

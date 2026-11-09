@@ -50,17 +50,21 @@ public class PvAffirmationService
     private final MissionPersonneRepository missionPersonneRepository;
     private final ConstatRepository constatRepository;
 
+    private final MissionAccess missionAccess;
+
     public PvAffirmationService(
             PvAffirmationRepository pvRepository,
             MissionRepository missionRepository,
             MissionPersonneRepository missionPersonneRepository,
-            ConstatRepository constatRepository) {
+            ConstatRepository constatRepository,
+            MissionAccess missionAccess) {
 
         this.pvRepository = pvRepository;
         this.missionRepository = missionRepository;
         this.missionPersonneRepository =
                 missionPersonneRepository;
         this.constatRepository = constatRepository;
+        this.missionAccess = missionAccess;
     }
 
     // ============================================================
@@ -142,6 +146,8 @@ public class PvAffirmationService
                                 )
                         );
 
+        missionAccess.checkAccess(pv.getMission().getId());
+
         return toResponse(pv);
     }
 
@@ -160,6 +166,8 @@ public class PvAffirmationService
                             + "est obligatoire."
             );
         }
+
+        missionAccess.checkAccess(missionId);
 
         PvAffirmation pv =
                 pvRepository
@@ -198,6 +206,8 @@ public class PvAffirmationService
 
         Mission mission =
                 pv.getMission();
+
+        missionAccess.checkAccess(mission.getId());
 
         if (request.getMissionId() != null
                 && !request.getMissionId()
@@ -311,7 +321,7 @@ public class PvAffirmationService
 
     private Mission findMission(Long id) {
 
-        return missionRepository
+        Mission mission = missionRepository
                 .findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -319,6 +329,10 @@ public class PvAffirmationService
                                         + id
                         )
                 );
+
+        missionAccess.checkAccess(mission.getId());
+
+        return mission;
     }
 
     // ============================================================

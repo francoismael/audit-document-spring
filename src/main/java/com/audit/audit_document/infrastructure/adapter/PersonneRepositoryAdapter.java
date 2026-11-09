@@ -26,6 +26,16 @@ public class PersonneRepositoryAdapter implements PersonneRepository {
     }
 
     @Override
+    public long getNextMatriculeNumber() {
+        return repository.getNextMatriculeNumber();
+    }
+
+    @Override
+    public boolean existsByMatricule(String matricule) {
+        return repository.existsByMatricule(matricule);
+    }
+
+    @Override
     public List<Personne> findAll() {
         return repository.findAll();
     }

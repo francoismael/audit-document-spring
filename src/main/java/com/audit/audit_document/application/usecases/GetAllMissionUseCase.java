@@ -6,5 +6,6 @@ import com.audit.audit_document.application.dto.MissionResponse;
 
 public interface GetAllMissionUseCase {
 
-    List<MissionResponse> execute();
+    // query: numero, intitule or structure (optional); statut: A_VENIR, EN_COURS, TERMINEE or SANS_DATES (optional).
+    List<MissionResponse> execute(String query, String statut);
 }

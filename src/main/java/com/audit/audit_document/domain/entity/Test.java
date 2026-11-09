@@ -25,7 +25,7 @@ public class Test {
 
     /*
      * Automatically generated reference:
-     * FT001, FT002, FT003...
+     * FT-001, FT-002, FT-003...
      */
     @Column(
             nullable = false,

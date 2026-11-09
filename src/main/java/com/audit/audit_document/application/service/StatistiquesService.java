@@ -8,6 +8,7 @@ import com.audit.audit_document.application.usecases.GetStatistiquesUseCase;
 import com.audit.audit_document.domain.entity.DocumentGenere;
 import com.audit.audit_document.domain.entity.DocumentType;
 import com.audit.audit_document.domain.entity.Mission;
+import com.audit.audit_document.domain.entity.MissionStatus;
 import com.audit.audit_document.domain.repository.DocumentGenereRepository;
 import com.audit.audit_document.domain.repository.DocumentTypeRepository;
 import com.audit.audit_document.domain.repository.MissionRepository;
@@ -17,9 +18,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class StatistiquesService implements GetStatistiquesUseCase {
@@ -36,39 +39,49 @@ public class StatistiquesService implements GetStatistiquesUseCase {
 
     private final DocumentGenereMapper documentGenereMapper;
 
+    private final MissionAccess missionAccess;
+
     public StatistiquesService(
             MissionRepository missionRepository,
             DocumentTypeRepository documentTypeRepository,
             DocumentGenereRepository documentGenereRepository,
-            DocumentGenereMapper documentGenereMapper) {
+            DocumentGenereMapper documentGenereMapper,
+            MissionAccess missionAccess) {
 
         this.missionRepository = missionRepository;
         this.documentTypeRepository = documentTypeRepository;
         this.documentGenereRepository = documentGenereRepository;
         this.documentGenereMapper = documentGenereMapper;
+        this.missionAccess = missionAccess;
     }
 
     @Override
     @Transactional(readOnly = true)
+    // Figures of the missions and documents the connected account sees (all of them for an administrator).
     public StatistiquesResponse getStatistics() {
 
         StatistiquesResponse response = new StatistiquesResponse();
 
+        List<DocumentGenere> documents = documentGenereRepository.findAll()
+                .stream()
+                .filter(missionAccess.visibleDocuments())
+                .collect(Collectors.toList());
+
         fillMissionStatistics(response);
-        fillDocumentTypeStatistics(response);
+        fillDocumentTypeStatistics(response, documents);
 
-        response.setNombreDocumentsGeneres(
-                documentGenereRepository.count());
+        response.setNombreDocumentsGeneres(documents.size());
 
-        response.setDocumentsParMois(countDocumentsByMonth());
-        response.setDerniersDocuments(findRecentDocuments());
+        response.setDocumentsParMois(countDocumentsByMonth(documents));
+        response.setDerniersDocuments(findRecentDocuments(documents));
 
         return response;
     }
 
     private void fillMissionStatistics(StatistiquesResponse response) {
 
-        List<Mission> missions = missionRepository.findAll();
+        List<Mission> missions =
+                missionAccess.keepVisible(missionRepository.findAll(), Mission::getId);
         LocalDate today = LocalDate.now();
 
         long ongoing = 0;
@@ -78,20 +91,22 @@ public class StatistiquesService implements GetStatistiquesUseCase {
 
         for (Mission mission : missions) {
 
-            LocalDate start = mission.getDateDebut();
-            LocalDate end = mission.getDateFin();
+            switch (MissionStatus.of(mission, today)) {
 
-            if (end != null && end.isBefore(today)) {
-                finished++;
+                case TERMINEE:
+                    finished++;
+                    break;
 
-            } else if (start != null && start.isAfter(today)) {
-                upcoming++;
+                case A_VENIR:
+                    upcoming++;
+                    break;
 
-            } else if (start != null) {
-                ongoing++;
+                case EN_COURS:
+                    ongoing++;
+                    break;
 
-            } else {
-                withoutDates++;
+                default:
+                    withoutDates++;
             }
         }
 
@@ -102,11 +117,17 @@ public class StatistiquesService implements GetStatistiquesUseCase {
         response.setMissionsSansDates(withoutDates);
     }
 
-    private void fillDocumentTypeStatistics(StatistiquesResponse response) {
+    private void fillDocumentTypeStatistics(
+            StatistiquesResponse response,
+            List<DocumentGenere> documents) {
 
         List<DocumentType> types = documentTypeRepository.findAll();
-        Map<Long, Long> countsByType =
-                documentGenereRepository.countGroupedByDocumentType();
+        Map<Long, Long> countsByType = documents
+                .stream()
+                .filter(document -> document.getDocumentType() != null)
+                .collect(Collectors.groupingBy(
+                        document -> document.getDocumentType().getId(),
+                        Collectors.counting()));
 
         long activeTypes = 0;
         List<TypeDocumentStatistiqueResponse> documentsByType = new ArrayList<>();
@@ -133,7 +154,7 @@ public class StatistiquesService implements GetStatistiquesUseCase {
         response.setDocumentsParType(documentsByType);
     }
 
-    private List<MoisStatistiqueResponse> countDocumentsByMonth() {
+    private List<MoisStatistiqueResponse> countDocumentsByMonth(List<DocumentGenere> documents) {
 
         YearMonth currentMonth = YearMonth.now();
         YearMonth firstMonth = currentMonth.minusMonths(MONTHS_IN_HISTORY - 1L);
@@ -143,10 +164,6 @@ public class StatistiquesService implements GetStatistiquesUseCase {
         for (int i = 0; i < MONTHS_IN_HISTORY; i++) {
             countsByMonth.put(firstMonth.plusMonths(i), 0L);
         }
-
-        List<DocumentGenere> documents =
-                documentGenereRepository.findByDateGenerationAfter(
-                        firstMonth.atDay(1).atStartOfDay());
 
         for (DocumentGenere document : documents) {
 
@@ -167,16 +184,13 @@ public class StatistiquesService implements GetStatistiquesUseCase {
         return result;
     }
 
-    private List<DocumentGenereResponse> findRecentDocuments() {
+    private List<DocumentGenereResponse> findRecentDocuments(List<DocumentGenere> documents) {
 
-        List<DocumentGenereResponse> result = new ArrayList<>();
-
-        for (DocumentGenere document
-                : documentGenereRepository.findRecent(RECENT_DOCUMENTS)) {
-
-            result.add(documentGenereMapper.toResponse(document));
-        }
-
-        return result;
+        return documents
+                .stream()
+                .sorted(Comparator.comparing(DocumentGenere::getDateGeneration).reversed())
+                .limit(RECENT_DOCUMENTS)
+                .map(documentGenereMapper::toResponse)
+                .collect(Collectors.toList());
     }
 }

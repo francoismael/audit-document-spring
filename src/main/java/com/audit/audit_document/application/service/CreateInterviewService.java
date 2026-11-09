@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -26,19 +27,33 @@ public class CreateInterviewService implements CreateInterviewUseCase {
     private final MissionRepository missionRepository;
     private final PersonneRepository personneRepository;
 
+    private final MissionDocumentRules missionDocumentRules;
+
     public CreateInterviewService(
             InterviewRepository interviewRepository,
             MissionRepository missionRepository,
-            PersonneRepository personneRepository) {
+            PersonneRepository personneRepository,
+            MissionDocumentRules missionDocumentRules) {
 
         this.interviewRepository = interviewRepository;
         this.missionRepository = missionRepository;
         this.personneRepository = personneRepository;
+        this.missionDocumentRules = missionDocumentRules;
     }
 
     @Override
     @Transactional
     public InterviewResponse execute(CreateInterviewRequest request) {
+
+        missionDocumentRules.checkInterview(
+                request.getMissionId(),
+                request.getPersonneIntervieweeId(),
+                Arrays.asList(
+                        request.getRedigeParPersonneId(),
+                        request.getSuperviseParPersonneId(),
+                        request.getValideParPersonneId()),
+                request.getQuestions());
+
 
         // Find the mission
         Mission mission = missionRepository.findById(request.getMissionId())
@@ -103,6 +118,9 @@ public class CreateInterviewService implements CreateInterviewUseCase {
         interview.setDateInterview(request.getDateInterview());
         interview.setFonction(request.getFonction());
         interview.setAnciennete(request.getAnciennete());
+        interview.setDateRedaction(request.getDateRedaction());
+        interview.setDateSupervision(request.getDateSupervision());
+        interview.setDateValidation(request.getDateValidation());
 
         interview.setRedigeParPersonne(redigeParPersonne);
         interview.setSuperviseParPersonne(superviseParPersonne);
@@ -184,6 +202,9 @@ System.out.println("======================================");
         response.setDateInterview(interview.getDateInterview());
         response.setFonction(interview.getFonction());
         response.setAnciennete(interview.getAnciennete());
+        response.setDateRedaction(interview.getDateRedaction());
+        response.setDateSupervision(interview.getDateSupervision());
+        response.setDateValidation(interview.getDateValidation());
 
         // Writer
         if (interview.getRedigeParPersonne() != null) {

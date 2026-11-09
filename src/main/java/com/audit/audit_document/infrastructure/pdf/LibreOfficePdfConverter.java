@@ -1,30 +1,23 @@
 package com.audit.audit_document.infrastructure.pdf;
 
 import com.audit.audit_document.application.port.PdfConverter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
+/*
+ * Conversion with LibreOffice (headless): works on any system, but the layout
+ * can differ a little from Word (fonts, images, justification).
+ * Chosen with app.pdf.engine=libreoffice, or when the engine is not set.
+ */
 @Component
+@ConditionalOnProperty(name = "app.pdf.engine", havingValue = "libreoffice", matchIfMissing = true)
 public class LibreOfficePdfConverter implements PdfConverter {
-
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(LibreOfficePdfConverter.class);
-
-    private static final String CONVERSION_FAILED =
-            "La conversion du document en PDF a échoué.";
 
     @Value("${app.pdf.soffice-path}")
     private String sofficePath;
@@ -42,61 +35,10 @@ public class LibreOfficePdfConverter implements PdfConverter {
     @Override
     public synchronized byte[] convertDocxToPdf(byte[] docxContent) {
 
-        Path workDirectory = null;
-
-        try {
-            workDirectory = Files.createTempDirectory("audit-pdf-");
-
-            Path input = workDirectory.resolve("document.docx");
-            Files.write(input, docxContent);
-
-            Process process =
-                    new ProcessBuilder(buildCommand(input, workDirectory))
-                            .redirectErrorStream(true)
-                            .redirectOutput(workDirectory.resolve("soffice.log").toFile())
-                            .start();
-
-            if (!process.waitFor(timeoutSeconds, TimeUnit.SECONDS)) {
-
-                process.destroyForcibly();
-
-                throw new RuntimeException(
-                        "La conversion du document en PDF a pris trop de temps.");
-            }
-
-            Path output = workDirectory.resolve("document.pdf");
-
-            if (process.exitValue() != 0 || !Files.exists(output)) {
-
-                LOGGER.error(
-                        "LibreOffice conversion failed (exit code {}): {}",
-                        process.exitValue(),
-                        readLog(workDirectory));
-
-                throw new RuntimeException(CONVERSION_FAILED);
-            }
-
-            return Files.readAllBytes(output);
-
-        } catch (IOException e) {
-
-            throw new RuntimeException(CONVERSION_FAILED, e);
-
-        } catch (InterruptedException e) {
-
-            Thread.currentThread().interrupt();
-
-            throw new RuntimeException(CONVERSION_FAILED, e);
-
-        } finally {
-
-            deleteQuietly(workDirectory);
-        }
+        return PdfConversion.run("LibreOffice", docxContent, timeoutSeconds, this::buildCommand);
     }
 
-    private List<String> buildCommand(
-            Path input,
-            Path outputDirectory) {
+    private List<String> buildCommand(Path workDirectory) {
 
         Path profile =
                 Paths.get(profileDirectory)
@@ -113,35 +55,7 @@ public class LibreOfficePdfConverter implements PdfConverter {
                 "--convert-to",
                 "pdf",
                 "--outdir",
-                outputDirectory.toString(),
-                input.toString());
-    }
-
-    private String readLog(Path workDirectory) {
-
-        try {
-            return new String(
-                    Files.readAllBytes(workDirectory.resolve("soffice.log")),
-                    StandardCharsets.UTF_8);
-
-        } catch (IOException e) {
-            return "(no log)";
-        }
-    }
-
-    private void deleteQuietly(Path directory) {
-
-        if (directory == null) {
-            return;
-        }
-
-        try (Stream<Path> paths = Files.walk(directory)) {
-
-            paths.sorted(Comparator.reverseOrder())
-                    .forEach(path -> path.toFile().delete());
-
-        } catch (IOException e) {
-            LOGGER.warn("Could not delete temporary directory {}", directory);
-        }
+                workDirectory.toString(),
+                workDirectory.resolve("document.docx").toString());
     }
 }

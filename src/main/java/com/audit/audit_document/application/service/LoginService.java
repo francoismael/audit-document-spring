@@ -55,7 +55,8 @@ public class LoginService implements LoginUseCase {
         }
 
         if (!Boolean.TRUE.equals(utilisateur.getActif())) {
-            throw new DisabledException("Ce compte est désactivé");
+            throw new DisabledException(
+                    "Ce compte n'est pas actif : un administrateur doit l'activer.");
         }
 
         String token = jwtService.generateToken(utilisateur);
@@ -63,7 +64,6 @@ public class LoginService implements LoginUseCase {
         return new LoginResponse(
                 utilisateur.getId(),
                 utilisateur.getUsername(),
-                utilisateur.getEmail(),
                 utilisateur.getRole(),
                 token
         );

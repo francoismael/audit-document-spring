@@ -14,4 +14,8 @@ public interface PersonneRepository {
     List<Personne> findAll();
 
     void deleteById(Long id);
+
+    long getNextMatriculeNumber();
+
+    boolean existsByMatricule(String matricule);
 }

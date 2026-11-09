@@ -5,12 +5,16 @@ import com.audit.audit_document.application.dto.MissionResponse;
 import com.audit.audit_document.application.usecases.GetAllMissionUseCase;
 import com.audit.audit_document.domain.entity.Mission;
 import com.audit.audit_document.domain.entity.MissionPersonne;
+import com.audit.audit_document.domain.entity.MissionStatus;
 import com.audit.audit_document.domain.repository.MissionPersonneRepository;
 import com.audit.audit_document.domain.repository.MissionRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.function.Predicate;
 
 @Service
 public class GetAllMissionService implements GetAllMissionUseCase {
@@ -18,23 +22,38 @@ public class GetAllMissionService implements GetAllMissionUseCase {
     private final MissionRepository missionRepository;
     private final MissionPersonneRepository missionPersonneRepository;
 
+    private final MissionAccess missionAccess;
+
     public GetAllMissionService(
             MissionRepository missionRepository,
-            MissionPersonneRepository missionPersonneRepository) {
+            MissionPersonneRepository missionPersonneRepository,
+            MissionAccess missionAccess) {
 
         this.missionRepository = missionRepository;
         this.missionPersonneRepository = missionPersonneRepository;
+        this.missionAccess = missionAccess;
     }
 
     @Override
-    public List<MissionResponse> execute() {
+    public List<MissionResponse> execute(String query, String statut) {
 
-        // find all mission
-        List<Mission> missions = missionRepository.findAll();
+        MissionStatus wantedStatus = parseStatut(statut);
+        LocalDate today = LocalDate.now();
 
         List<MissionResponse> responses = new ArrayList<>();
 
-        for (Mission mission : missions) {
+        Predicate<Long> visibleMissions = missionAccess.visibleMissions();
+
+        for (Mission mission : missionRepository.findAll()) {
+
+            String structureNom =
+                    mission.getStructure() != null ? mission.getStructure().getNom() : null;
+
+            if (!visibleMissions.test(mission.getId())
+                    || !SearchText.matches(query, mission.getNumero(), mission.getIntitule(), structureNom)
+                    || (wantedStatus != null && MissionStatus.of(mission, today) != wantedStatus)) {
+                continue;
+            }
 
             MissionResponse response = new MissionResponse();
 
@@ -97,6 +116,10 @@ public class GetAllMissionService implements GetAllMissionUseCase {
                         missionPersonne.getPersonne().getServices()
                 );
 
+                personneResponse.setSexe(
+                        missionPersonne.getPersonne().getSexe()
+                );
+
                 personneResponse.setRoles(
                         missionPersonne.getRoles()
                 );
@@ -110,5 +133,22 @@ public class GetAllMissionService implements GetAllMissionUseCase {
         }
 
         return responses;
+    }
+
+    private MissionStatus parseStatut(String statut) {
+
+        if (statut == null || statut.trim().isEmpty()) {
+            return null;
+        }
+
+        try {
+            return MissionStatus.valueOf(statut.trim().toUpperCase(Locale.ROOT));
+
+        } catch (IllegalArgumentException e) {
+
+            throw new IllegalArgumentException(
+                    "Statut de mission inconnu : " + statut
+                            + ". Valeurs possibles : A_VENIR, EN_COURS, TERMINEE, SANS_DATES.");
+        }
     }
 }

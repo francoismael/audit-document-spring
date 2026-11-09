@@ -38,4 +38,13 @@ public interface DocumentGenereJpa
     @Query("UPDATE DocumentGenere d SET d.mission = NULL "
             + "WHERE d.mission.id = :missionId")
     void detachMission(@Param("missionId") Long missionId);
+
+    @Modifying
+    @Query("UPDATE DocumentGenere d SET d.documentType = NULL, "
+            + "d.documentTypeCode = :code, d.documentTypeNom = :nom "
+            + "WHERE d.documentType.id = :documentTypeId")
+    void detachDocumentType(
+            @Param("documentTypeId") Long documentTypeId,
+            @Param("code") String code,
+            @Param("nom") String nom);
 }

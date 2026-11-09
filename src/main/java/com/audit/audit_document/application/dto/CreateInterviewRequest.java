@@ -15,6 +15,12 @@ public class CreateInterviewRequest {
 
     private String anciennete;
 
+    private LocalDate dateRedaction;
+
+    private LocalDate dateSupervision;
+
+    private LocalDate dateValidation;
+
     private Long redigeParPersonneId;
 
     private Long superviseParPersonneId;
@@ -97,5 +103,29 @@ public class CreateInterviewRequest {
 
     public void setQuestions(List<InterviewQuestionRequest> questions) {
         this.questions = questions;
+    }
+
+    public LocalDate getDateRedaction() {
+        return dateRedaction;
+    }
+
+    public void setDateRedaction(LocalDate dateRedaction) {
+        this.dateRedaction = dateRedaction;
+    }
+
+    public LocalDate getDateSupervision() {
+        return dateSupervision;
+    }
+
+    public void setDateSupervision(LocalDate dateSupervision) {
+        this.dateSupervision = dateSupervision;
+    }
+
+    public LocalDate getDateValidation() {
+        return dateValidation;
+    }
+
+    public void setDateValidation(LocalDate dateValidation) {
+        this.dateValidation = dateValidation;
     }
 }

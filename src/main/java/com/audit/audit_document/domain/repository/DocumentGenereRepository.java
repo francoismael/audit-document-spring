@@ -31,5 +31,8 @@ public interface DocumentGenereRepository {
 
     void detachMission(Long missionId);
 
+    // The documents keep the code and the name of their type, which is deleted.
+    void detachDocumentType(Long documentTypeId, String code, String nom);
+
     void deleteById(Long id);
 }

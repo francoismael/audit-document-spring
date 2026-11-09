@@ -25,12 +25,16 @@ public class RapportAuditService
     private final RapportAuditRepository rapportAuditRepository;
     private final MissionRepository missionRepository;
 
+    private final MissionAccess missionAccess;
+
     public RapportAuditService(
             RapportAuditRepository rapportAuditRepository,
-            MissionRepository missionRepository) {
+            MissionRepository missionRepository,
+            MissionAccess missionAccess) {
 
         this.rapportAuditRepository = rapportAuditRepository;
         this.missionRepository = missionRepository;
+        this.missionAccess = missionAccess;
     }
 
     // ============================================================
@@ -61,6 +65,8 @@ public class RapportAuditService
                                         + request.getMissionId()
                         )
                 );
+
+        missionAccess.checkAccess(mission.getId());
 
         if (rapportAuditRepository
                 .findByMissionId(mission.getId())
@@ -128,6 +134,8 @@ public class RapportAuditService
             );
         }
 
+        missionAccess.checkAccess(missionId);
+
         RapportAudit rapport =
                 rapportAuditRepository
                         .findByMissionId(missionId)
@@ -175,6 +183,8 @@ public class RapportAuditService
                         );
 
         Mission mission = rapport.getMission();
+
+        missionAccess.checkAccess(mission.getId());
 
         if (request.getMissionId() != null
                 && !request.getMissionId().equals(mission.getId())) {
@@ -265,9 +275,16 @@ public class RapportAuditService
             );
         }
 
+        // Without an objet, the title of the mission is used.
+        String sujet =
+                mission.getObjet() != null
+                        && !mission.getObjet().trim().isEmpty()
+                        ? mission.getObjet()
+                        : mission.getIntitule();
+
         response.setTitre(
                 "RAPPORT D’AUDIT SUR "
-                        + mission.getObjet()
+                        + sujet
         );
 
         response.setMotifs(

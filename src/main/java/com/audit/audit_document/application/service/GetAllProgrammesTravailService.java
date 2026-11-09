@@ -20,19 +20,23 @@ public class GetAllProgrammesTravailService
     private final ProgrammeTravailRepository programmeRepository;
     private final LigneProgrammeRepository ligneRepository;
 
+    private final MissionAccess missionAccess;
+
     public GetAllProgrammesTravailService(
             ProgrammeTravailRepository programmeRepository,
-            LigneProgrammeRepository ligneRepository) {
+            LigneProgrammeRepository ligneRepository,
+            MissionAccess missionAccess) {
 
         this.programmeRepository = programmeRepository;
         this.ligneRepository = ligneRepository;
+        this.missionAccess = missionAccess;
     }
 
     @Override
     public List<ProgrammeTravailResponse> getAll() {
 
         List<ProgrammeTravail> programmes =
-                programmeRepository.findAll();
+                missionAccess.keepVisible(programmeRepository.findAll(), programme -> programme.getMission().getId());
 
         List<ProgrammeTravailResponse> responses =
                 new ArrayList<>();

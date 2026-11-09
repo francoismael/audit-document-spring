@@ -4,5 +4,5 @@ import com.audit.audit_document.application.dto.UtilisateurResponse;
 
 public interface GetUtilisateurByIdUseCase {
 
-    UtilisateurResponse execute(Long id);
+    UtilisateurResponse getById(Long id);
 }

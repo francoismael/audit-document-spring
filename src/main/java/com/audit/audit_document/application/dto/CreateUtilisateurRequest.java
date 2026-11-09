@@ -5,9 +5,11 @@ import com.audit.audit_document.domain.entity.Role;
 public class CreateUtilisateurRequest {
 
     private String username;
-    private String email;
     private String password;
     private Role role;
+
+    // Person of the directory linked to the account (optional).
+    private Long personneId;
 
     public String getUsername() {
         return username;
@@ -15,14 +17,6 @@ public class CreateUtilisateurRequest {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public String getPassword() {
@@ -39,5 +33,13 @@ public class CreateUtilisateurRequest {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public Long getPersonneId() {
+        return personneId;
+    }
+
+    public void setPersonneId(Long personneId) {
+        this.personneId = personneId;
     }
 }

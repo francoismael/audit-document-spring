@@ -5,8 +5,10 @@ import com.audit.audit_document.domain.entity.Role;
 public class UpdateUtilisateurRequest {
 
     private String username;
-    private String email;
     private Role role;
+
+    // Person of the directory linked to the account; null removes the link.
+    private Long personneId;
 
     public String getUsername() {
         return username;
@@ -16,19 +18,19 @@ public class UpdateUtilisateurRequest {
         this.username = username;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public Role getRole() {
         return role;
     }
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public Long getPersonneId() {
+        return personneId;
+    }
+
+    public void setPersonneId(Long personneId) {
+        this.personneId = personneId;
     }
 }

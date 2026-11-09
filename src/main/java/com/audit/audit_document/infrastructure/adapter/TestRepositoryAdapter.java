@@ -59,7 +59,7 @@ public class TestRepositoryAdapter
         Long number = testJpa.getNextReference();
 
         return String.format(
-                "FT%03d",
+                "FT-%03d",
                 number
         );
     }

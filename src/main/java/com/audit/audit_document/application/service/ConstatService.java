@@ -51,12 +51,16 @@ public class ConstatService implements
     private final ConstatRepository constatRepository;
     private final TestRepository testRepository;
 
+    private final MissionAccess missionAccess;
+
     public ConstatService(
             ConstatRepository constatRepository,
-            TestRepository testRepository) {
+            TestRepository testRepository,
+            MissionAccess missionAccess) {
 
         this.constatRepository = constatRepository;
         this.testRepository = testRepository;
+        this.missionAccess = missionAccess;
     }
 
     // =========================================================
@@ -83,14 +87,14 @@ public class ConstatService implements
 
         /*
          * Automatic reference generation.
-         * Example: CST001, CST002, CST003...
+         * Example: CST-001, CST-002, CST-003...
          */
         Long number =
                 constatRepository.getNextReference();
 
         String reference =
                 String.format(
-                        "CST%03d",
+                        "CST-%03d",
                         number
                 );
 
@@ -164,6 +168,8 @@ public class ConstatService implements
                                 )
                         );
 
+        missionAccess.checkAccess(missionIdOf(constat));
+
         return toResponse(
                 constat
         );
@@ -176,8 +182,8 @@ public class ConstatService implements
     @Override
     public List<ConstatResponse> getAll() {
 
-        return constatRepository
-                .findAll()
+        return missionAccess
+                .keepVisible(constatRepository.findAll(), ConstatService::missionIdOf)
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
@@ -228,6 +234,8 @@ public class ConstatService implements
                                                 + id
                                 )
                         );
+
+        missionAccess.checkAccess(missionIdOf(constat));
 
         Test test =
                 findTest(
@@ -403,10 +411,11 @@ public class ConstatService implements
     // TEST
     // =========================================================
 
+    // The test must belong to a mission the connected account sees.
     private Test findTest(
             Long testId) {
 
-        return testRepository
+        Test test = testRepository
                 .findById(testId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -414,6 +423,16 @@ public class ConstatService implements
                                         + testId
                         )
                 );
+
+        missionAccess.checkAccess(TestService.missionIdOf(test));
+
+        return test;
+    }
+
+    // Mission of a finding: the one of its test.
+    static Long missionIdOf(Constat constat) {
+
+        return TestService.missionIdOf(constat.getTest());
     }
 
     // =========================================================

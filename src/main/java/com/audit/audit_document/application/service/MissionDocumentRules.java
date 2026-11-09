@@ -1,5 +1,6 @@
 package com.audit.audit_document.application.service;
 
+import com.audit.audit_document.application.dto.InterviewQuestionRequest;
 import com.audit.audit_document.application.dto.ObjectifRequest;
 import com.audit.audit_document.application.dto.ReunionPersonneRequest;
 import com.audit.audit_document.domain.entity.MissionPersonne;
@@ -29,20 +30,27 @@ public class MissionDocumentRules {
 
     private final DeclarationIndependanceRepository declarationRepository;
 
+    private final MissionAccess missionAccess;
+
     public MissionDocumentRules(
             MissionPersonneRepository missionPersonneRepository,
-            DeclarationIndependanceRepository declarationRepository) {
+            DeclarationIndependanceRepository declarationRepository,
+            MissionAccess missionAccess) {
 
         this.missionPersonneRepository = missionPersonneRepository;
         this.declarationRepository = declarationRepository;
+        this.missionAccess = missionAccess;
     }
 
+    // The mission is required, and must be one of the missions the connected account sees.
     public void requireMission(Long missionId) {
 
         if (missionId == null) {
             throw new IllegalArgumentException(
                     "La mission est obligatoire.");
         }
+
+        missionAccess.checkAccess(missionId);
     }
 
     public void checkObjectifs(List<ObjectifRequest> objectifs) {
@@ -162,6 +170,56 @@ public class MissionDocumentRules {
                         pointFocal
                                 ? "Un représentant de l'entité auditée doit être un point focal de la mission."
                                 : "Un membre de l'équipe DAI doit faire partie de l'équipe d'audit de la mission.");
+            }
+        }
+    }
+
+    /*
+     * An interview has an interviewee, questions with a text, and its visas
+     * (written, supervised, validated by) come from the audit team of the mission.
+     */
+    public void checkInterview(
+            Long missionId,
+            Long intervieweeId,
+            List<Long> visaPersonneIds,
+            List<InterviewQuestionRequest> questions) {
+
+        requireMission(missionId);
+
+        if (intervieweeId == null) {
+            throw new IllegalArgumentException(
+                    "La personne interviewée est obligatoire.");
+        }
+
+        List<MissionPersonne> team =
+                missionPersonneRepository.findByMissionId(missionId);
+
+        for (Long personneId : visaPersonneIds) {
+
+            boolean auditor = personneId == null || team
+                    .stream()
+                    .anyMatch(member ->
+                            member.getPersonne().getId().equals(personneId)
+                                    && !MissionRole.POINT_FOCAL.name().equals(member.getRoles()));
+
+            if (!auditor) {
+                throw new IllegalArgumentException(
+                        "Les visas (rédigé, supervisé, validé par) doivent être donnés par l'équipe d'audit de la mission.");
+            }
+        }
+
+        if (questions == null) {
+            return;
+        }
+
+        for (InterviewQuestionRequest question : questions) {
+
+            if (question == null
+                    || question.getQuestion() == null
+                    || question.getQuestion().trim().isEmpty()) {
+
+                throw new IllegalArgumentException(
+                        "Chaque question de l'interview doit avoir un texte.");
             }
         }
     }

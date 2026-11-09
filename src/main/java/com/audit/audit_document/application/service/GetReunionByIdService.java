@@ -21,10 +21,14 @@ public class GetReunionByIdService
 
     private final ReunionRepository reunionRepository;
 
+    private final MissionAccess missionAccess;
+
     public GetReunionByIdService(
-            ReunionRepository reunionRepository) {
+            ReunionRepository reunionRepository,
+            MissionAccess missionAccess) {
 
         this.reunionRepository = reunionRepository;
+        this.missionAccess = missionAccess;
     }
 
     @Override
@@ -36,6 +40,8 @@ public class GetReunionByIdService
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Réunion introuvable"));
+
+        missionAccess.checkAccess(reunion.getMission().getId());
 
         return toResponse(reunion);
     }

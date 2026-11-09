@@ -60,15 +60,27 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
             .authorizeRequests()
 
-            // AUTHENTICATION
-            .antMatchers("/api/auth/**").permitAll()
+            // AUTHENTICATION: login and sign-up are public, the own account needs a token
+            .antMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register").permitAll()
+            .antMatchers("/api/auth/**").authenticated()
 
             // USERS: administrators only
-            .antMatchers(HttpMethod.GET, "/api/utilisateurs/**").hasRole("ADMIN")
-            .antMatchers(HttpMethod.POST, "/api/utilisateurs").hasRole("ADMIN")
-            .antMatchers(HttpMethod.PUT, "/api/utilisateurs/**").hasRole("ADMIN")
-            .antMatchers(HttpMethod.DELETE, "/api/utilisateurs/**").hasRole("ADMIN")
-            .antMatchers(HttpMethod.PATCH, "/api/utilisateurs/*/actif").hasRole("ADMIN")
+            .antMatchers("/api/utilisateurs/**").hasRole("ADMIN")
+
+            // DOCUMENT TYPES, WORD TEMPLATES AND FIELDS: everyone reads and generates, administrators configure
+            .antMatchers(HttpMethod.POST, "/api/document-types/*/generate").hasAnyRole("ADMIN", "UTILISATEUR")
+            .antMatchers(HttpMethod.GET, "/api/document-types/**", "/api/document-fields/**").hasAnyRole("ADMIN", "UTILISATEUR")
+            .antMatchers("/api/document-types/**", "/api/document-fields/**").hasRole("ADMIN")
+
+            // HISTORY: deletion is reserved to administrators
+            .antMatchers(HttpMethod.DELETE, "/api/documents-generes/**").hasRole("ADMIN")
+
+            // PEOPLE AND STRUCTURES: added from the mission form by everyone, changed by administrators
+            .antMatchers(HttpMethod.PUT, "/api/personnes/**", "/api/structures/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.DELETE, "/api/personnes/**", "/api/structures/**").hasRole("ADMIN")
+
+            // PV D'AFFIRMATION: deletion is reserved to administrators
+            .antMatchers(HttpMethod.DELETE, "/api/pv-affirmations/**").hasRole("ADMIN")
 
             // MISSIONS: deletion is reserved to administrators
             .antMatchers(HttpMethod.GET, "/api/missions/**").hasAnyRole("ADMIN", "UTILISATEUR")
@@ -118,7 +130,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(HttpMethod.PUT, "/api/constats/**").hasAnyRole("ADMIN", "UTILISATEUR")
             .antMatchers(HttpMethod.DELETE, "/api/constats/**").hasRole("ADMIN")
 
-            // OTHER APIS: any authenticated user
+            // ORDER OF THE SECTIONS OF THE BUSINESS DOCUMENTS: everyone reads it, administrators change it
+            .antMatchers(HttpMethod.GET, "/api/parametres/ordre-sections").hasAnyRole("ADMIN", "UTILISATEUR")
+            .antMatchers(HttpMethod.PUT, "/api/parametres/ordre-sections/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.DELETE, "/api/parametres/ordre-sections/**").hasRole("ADMIN")
+
+            // OTHER APIS: any authenticated user; the services only give the missions of his team (MissionAccess)
             .anyRequest().authenticated()
 
             .and()

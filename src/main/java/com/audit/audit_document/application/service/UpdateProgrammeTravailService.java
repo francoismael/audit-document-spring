@@ -31,14 +31,18 @@ public class UpdateProgrammeTravailService
     private final LigneProgrammeRepository ligneRepository;
     private final ObjectifRepository objectifRepository;
 
+    private final MissionAccess missionAccess;
+
     public UpdateProgrammeTravailService(
             ProgrammeTravailRepository programmeRepository,
             LigneProgrammeRepository ligneRepository,
-            ObjectifRepository objectifRepository) {
+            ObjectifRepository objectifRepository,
+            MissionAccess missionAccess) {
 
         this.programmeRepository = programmeRepository;
         this.ligneRepository = ligneRepository;
         this.objectifRepository = objectifRepository;
+        this.missionAccess = missionAccess;
     }
 
     @Override
@@ -55,6 +59,8 @@ public class UpdateProgrammeTravailService
                         );
 
         Mission mission = programme.getMission();
+
+        missionAccess.checkAccess(mission.getId());
 
         if (request.getMissionId() != null &&
                 !request.getMissionId().equals(mission.getId())) {

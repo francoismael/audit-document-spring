@@ -24,12 +24,16 @@ public class GetProgrammeTravailByIdService
     private final ProgrammeTravailRepository programmeRepository;
     private final LigneProgrammeRepository ligneRepository;
 
+    private final MissionAccess missionAccess;
+
     public GetProgrammeTravailByIdService(
             ProgrammeTravailRepository programmeRepository,
-            LigneProgrammeRepository ligneRepository) {
+            LigneProgrammeRepository ligneRepository,
+            MissionAccess missionAccess) {
 
         this.programmeRepository = programmeRepository;
         this.ligneRepository = ligneRepository;
+        this.missionAccess = missionAccess;
     }
 
     @Override
@@ -42,6 +46,8 @@ public class GetProgrammeTravailByIdService
                                         "Programme de travail introuvable"
                                 )
                         );
+
+        missionAccess.checkAccess(programme.getMission().getId());
 
         List<LigneProgramme> lignes =
                 ligneRepository.findByProgrammeId(id);

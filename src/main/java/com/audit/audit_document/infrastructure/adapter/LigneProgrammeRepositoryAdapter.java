@@ -49,6 +49,6 @@ public class LigneProgrammeRepositoryAdapter
 
         Long number = ligneProgrammeJpa.getNextNumeroControle();
 
-        return String.format("CTRL%03d", number);
+        return String.format("CTRL-%03d", number);
     }
 }

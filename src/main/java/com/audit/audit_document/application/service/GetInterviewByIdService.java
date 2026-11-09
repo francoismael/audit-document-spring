@@ -19,8 +19,11 @@ public class GetInterviewByIdService implements GetInterviewByIdUseCase {
 
     private final InterviewRepository interviewRepository;
 
-    public GetInterviewByIdService(InterviewRepository interviewRepository) {
+    private final MissionAccess missionAccess;
+
+    public GetInterviewByIdService(InterviewRepository interviewRepository, MissionAccess missionAccess) {
         this.interviewRepository = interviewRepository;
+        this.missionAccess = missionAccess;
     }
 
     @Override
@@ -31,6 +34,8 @@ public class GetInterviewByIdService implements GetInterviewByIdUseCase {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Interview introuvable"));
 
+        missionAccess.checkAccess(interview.getMission().getId());
+
         InterviewResponse response = new InterviewResponse();
 
         // Interview
@@ -39,6 +44,9 @@ public class GetInterviewByIdService implements GetInterviewByIdUseCase {
         response.setDateInterview(interview.getDateInterview());
         response.setFonction(interview.getFonction());
         response.setAnciennete(interview.getAnciennete());
+        response.setDateRedaction(interview.getDateRedaction());
+        response.setDateSupervision(interview.getDateSupervision());
+        response.setDateValidation(interview.getDateValidation());
 
         // Mission
         if (interview.getMission() != null) {

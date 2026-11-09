@@ -1,5 +1,7 @@
 package com.audit.audit_document.application.dto;
 
+import com.audit.audit_document.domain.entity.Sexe;
+
 public class MissionPersonneResponse {
 
     private Long personneId;
@@ -7,6 +9,7 @@ public class MissionPersonneResponse {
     private String prenom;
     private String fonction;
     private String services;
+    private Sexe sexe;
     private String roles;
     private Long missionPersonneId;
 
@@ -66,5 +69,13 @@ public class MissionPersonneResponse {
 
     public void setRoles(String roles) {
         this.roles = roles;
+    }
+
+    public Sexe getSexe() {
+        return sexe;
+    }
+
+    public void setSexe(Sexe sexe) {
+        this.sexe = sexe;
     }
 }

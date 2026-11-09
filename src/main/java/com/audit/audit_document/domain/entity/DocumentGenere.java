@@ -11,12 +11,17 @@ public class DocumentGenere {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-            name = "document_type_id",
-            nullable = false
-    )
+    // Null once the type is deleted: the document stays in the history.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "document_type_id")
     private DocumentType documentType;
+
+    // Code and name of the type, kept when the type is deleted.
+    @Column(name = "document_type_code", length = 100)
+    private String documentTypeCode;
+
+    @Column(name = "document_type_nom", length = 255)
+    private String documentTypeNom;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "mission_id")
@@ -53,6 +58,10 @@ public class DocumentGenere {
     )
     private LocalDateTime dateGeneration;
 
+    // Account that generated the document; it stays in the history when the account is deleted.
+    @Column(name = "utilisateur_id")
+    private Long utilisateurId;
+
     public DocumentGenere() {
     }
 
@@ -70,6 +79,22 @@ public class DocumentGenere {
 
     public void setDocumentType(DocumentType documentType) {
         this.documentType = documentType;
+    }
+
+    public String getDocumentTypeCode() {
+        return documentTypeCode;
+    }
+
+    public void setDocumentTypeCode(String documentTypeCode) {
+        this.documentTypeCode = documentTypeCode;
+    }
+
+    public String getDocumentTypeNom() {
+        return documentTypeNom;
+    }
+
+    public void setDocumentTypeNom(String documentTypeNom) {
+        this.documentTypeNom = documentTypeNom;
     }
 
     public Mission getMission() {
@@ -126,5 +151,13 @@ public class DocumentGenere {
 
     public void setDateGeneration(LocalDateTime dateGeneration) {
         this.dateGeneration = dateGeneration;
+    }
+
+    public Long getUtilisateurId() {
+        return utilisateurId;
+    }
+
+    public void setUtilisateurId(Long utilisateurId) {
+        this.utilisateurId = utilisateurId;
     }
 }

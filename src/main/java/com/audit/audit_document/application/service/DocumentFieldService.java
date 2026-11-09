@@ -178,6 +178,10 @@ public class DocumentFieldService
         List<DocumentField> documentFields =
                 new ArrayList<>();
 
+        // Names already used in this list, so that two new fields cannot share a name.
+        Set<String> namesInRequest =
+                new HashSet<>();
+
         /*
          * The order follows the order of the list
          * received from the client.
@@ -186,6 +190,21 @@ public class DocumentFieldService
                 : request.getFields()) {
 
             validateItemRequest(fieldRequest);
+
+            String nom =
+                    fieldRequest.getNom().trim();
+
+            ensureNameIsFree(
+                    request.getDocumentTypeId(),
+                    nom,
+                    null);
+
+            if (!namesInRequest.add(nom.toLowerCase())) {
+
+                throw new ConflictException(
+                        "Le champ « " + nom
+                                + " » apparaît deux fois dans la liste");
+            }
 
             DocumentField documentField =
                     new DocumentField();

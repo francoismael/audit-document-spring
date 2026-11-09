@@ -34,13 +34,17 @@ public class ReponseService implements
     private final ReponseRepository reponseRepository;
     private final RecommandationRepository recommandationRepository;
 
+    private final MissionAccess missionAccess;
+
     public ReponseService(
             ReponseRepository reponseRepository,
-            RecommandationRepository recommandationRepository) {
+            RecommandationRepository recommandationRepository,
+            MissionAccess missionAccess) {
 
         this.reponseRepository = reponseRepository;
         this.recommandationRepository =
                 recommandationRepository;
+        this.missionAccess = missionAccess;
     }
 
     // =========================================================
@@ -113,6 +117,8 @@ public class ReponseService implements
                                 )
                         );
 
+        missionAccess.checkAccess(missionIdOf(reponse));
+
         return toResponse(reponse);
     }
 
@@ -124,8 +130,8 @@ public class ReponseService implements
     @Transactional(Transactional.TxType.SUPPORTS)
     public List<ReponseResponse> getAll() {
 
-        return reponseRepository
-                .findAll()
+        return missionAccess
+                .keepVisible(reponseRepository.findAll(), ReponseService::missionIdOf)
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
@@ -176,6 +182,8 @@ public class ReponseService implements
                                                 + id
                                 )
                         );
+
+        missionAccess.checkAccess(missionIdOf(reponse));
 
         Recommandation nouvelleRecommandation =
                 findRecommandation(
@@ -232,9 +240,24 @@ public class ReponseService implements
                                 )
                         );
 
+        Recommandation recommandation =
+                reponse.getRecommandation();
+
         reponseRepository.deleteById(
                 reponse.getId()
         );
+
+        /*
+         * The maintenance decision needs a response:
+         * without any response left, it is cleared.
+         */
+        if (reponseRepository
+                .findByRecommandationId(recommandation.getId())
+                .isEmpty()) {
+
+            recommandation.setMaintenue(null);
+            recommandationRepository.save(recommandation);
+        }
     }
 
     // =========================================================
@@ -273,10 +296,11 @@ public class ReponseService implements
     // FIND RECOMMANDATION
     // =========================================================
 
+    // The recommendation must belong to a mission the connected account sees.
     private Recommandation findRecommandation(
             Long recommandationId) {
 
-        return recommandationRepository
+        Recommandation recommandation = recommandationRepository
                 .findById(recommandationId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -284,6 +308,15 @@ public class ReponseService implements
                                         + recommandationId
                         )
                 );
+
+        missionAccess.checkAccess(ConstatService.missionIdOf(recommandation.getConstat()));
+
+        return recommandation;
+    }
+
+    private static Long missionIdOf(Reponse reponse) {
+
+        return ConstatService.missionIdOf(reponse.getRecommandation().getConstat());
     }
 
     // =========================================================

@@ -118,8 +118,8 @@ public class DocumentTypeManagementService
     }
 
     /*
-     * A type already used to generate documents is kept
-     * so the history is not broken: it must be deactivated instead.
+     * The documents generated with the type stay in the history:
+     * they keep its code and its name, without the link to the type.
      */
     @Override
     @Transactional
@@ -127,17 +127,10 @@ public class DocumentTypeManagementService
 
         DocumentType documentType = findDocumentType(id);
 
-        long generatedCount =
-                documentGenereRepository.countByDocumentTypeId(id);
-
-        if (generatedCount > 0) {
-
-            throw new ConflictException(
-                    "Ce type a déjà servi à générer "
-                            + generatedCount
-                            + " document(s). Désactivez-le plutôt "
-                            + "que de le supprimer.");
-        }
+        documentGenereRepository.detachDocumentType(
+                id,
+                documentType.getCode(),
+                documentType.getNom());
 
         List<Path> templateFiles = new ArrayList<>();
 

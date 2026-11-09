@@ -32,16 +32,20 @@ public class UpdateMissionService implements UpdateMissionUseCase {
     private final PersonneRepository personneRepository;
     private final StructureRepository structureRepository;
 
+    private final MissionAccess missionAccess;
+
     public UpdateMissionService(
             MissionRepository missionRepository,
             MissionPersonneRepository missionPersonneRepository,
             PersonneRepository personneRepository,
-            StructureRepository structureRepository) {
+            StructureRepository structureRepository,
+            MissionAccess missionAccess) {
 
         this.missionRepository = missionRepository;
         this.missionPersonneRepository = missionPersonneRepository;
         this.personneRepository = personneRepository;
         this.structureRepository = structureRepository;
+        this.missionAccess = missionAccess;
     }
 
     @Override
@@ -59,6 +63,9 @@ public class UpdateMissionService implements UpdateMissionUseCase {
                         new ResourceNotFoundException(
                                 "Mission introuvable : " + id
                         ));
+
+        missionAccess.checkAccess(mission.getId());
+        missionAccess.checkCurrentUserStaysInTeam(request.getPersonnes());
 
         // find structure
         Structure structure = structureRepository
@@ -138,6 +145,10 @@ public class UpdateMissionService implements UpdateMissionUseCase {
 
             personneResponse.setServices(
                     missionPersonne.getPersonne().getServices()
+            );
+
+            personneResponse.setSexe(
+                    missionPersonne.getPersonne().getSexe()
             );
 
             personneResponse.setRoles(

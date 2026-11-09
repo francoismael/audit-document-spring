@@ -2,6 +2,7 @@ package com.audit.audit_document.application.service;
 
 import com.audit.audit_document.application.dto.DocumentGenereResponse;
 import com.audit.audit_document.domain.entity.DocumentGenere;
+import com.audit.audit_document.domain.entity.DocumentType;
 import com.audit.audit_document.domain.entity.Mission;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -30,9 +31,20 @@ public class DocumentGenereMapper {
         DocumentGenereResponse response = new DocumentGenereResponse();
 
         response.setId(document.getId());
-        response.setDocumentTypeId(document.getDocumentType().getId());
-        response.setDocumentTypeCode(document.getDocumentType().getCode());
-        response.setDocumentTypeNom(document.getDocumentType().getNom());
+        DocumentType type = document.getDocumentType();
+
+        // Without its type (deleted), the document gives the code and the name kept with it.
+        if (type != null) {
+
+            response.setDocumentTypeId(type.getId());
+            response.setDocumentTypeCode(type.getCode());
+            response.setDocumentTypeNom(type.getNom());
+
+        } else {
+
+            response.setDocumentTypeCode(document.getDocumentTypeCode());
+            response.setDocumentTypeNom(document.getDocumentTypeNom());
+        }
         response.setNomFichier(document.getNomFichier());
         response.setTaille(document.getTaille());
         response.setTemplateVersion(document.getTemplateVersion());

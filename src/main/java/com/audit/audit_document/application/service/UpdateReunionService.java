@@ -33,12 +33,15 @@ public class UpdateReunionService
 
     private final MissionDocumentRules missionDocumentRules;
 
+    private final MissionAccess missionAccess;
+
     public UpdateReunionService(
             ReunionRepository reunionRepository,
             ReunionPersonneRepository reunionPersonneRepository,
             MissionRepository missionRepository,
             PersonneRepository personneRepository,
-            MissionDocumentRules missionDocumentRules) {
+            MissionDocumentRules missionDocumentRules,
+            MissionAccess missionAccess) {
 
         this.reunionRepository = reunionRepository;
         this.reunionPersonneRepository =
@@ -46,6 +49,7 @@ public class UpdateReunionService
         this.missionRepository = missionRepository;
         this.personneRepository = personneRepository;
         this.missionDocumentRules = missionDocumentRules;
+        this.missionAccess = missionAccess;
     }
 
     @Override
@@ -67,6 +71,8 @@ public class UpdateReunionService
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Réunion introuvable"));
+
+        missionAccess.checkAccess(reunion.getMission().getId());
 
         Mission mission = missionRepository
                 .findById(request.getMissionId())

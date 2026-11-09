@@ -18,16 +18,20 @@ public class GetAllDeclarationIndependanceService
 
     private final DeclarationIndependanceRepository declarationRepository;
 
+    private final MissionAccess missionAccess;
+
     public GetAllDeclarationIndependanceService(
-            DeclarationIndependanceRepository declarationRepository) {
+            DeclarationIndependanceRepository declarationRepository,
+            MissionAccess missionAccess) {
         this.declarationRepository = declarationRepository;
+        this.missionAccess = missionAccess;
     }
 
     @Override
     public List<DeclarationIndependanceResponse> execute() {
 
         List<DeclarationIndependance> declarations =
-                declarationRepository.findAll();
+                missionAccess.keepVisible(declarationRepository.findAll(), declaration -> declaration.getMission().getId());
 
         return declarations.stream()
                 .map(this::toResponse)

@@ -24,16 +24,20 @@ public class UpdateDeclarationIndependanceService
 
     private final MissionDocumentRules missionDocumentRules;
 
+    private final MissionAccess missionAccess;
+
     public UpdateDeclarationIndependanceService(
             DeclarationIndependanceRepository declarationRepository,
             MissionRepository missionRepository,
             PersonneRepository personneRepository,
-            MissionDocumentRules missionDocumentRules) {
+            MissionDocumentRules missionDocumentRules,
+            MissionAccess missionAccess) {
 
         this.declarationRepository = declarationRepository;
         this.missionRepository = missionRepository;
         this.personneRepository = personneRepository;
         this.missionDocumentRules = missionDocumentRules;
+        this.missionAccess = missionAccess;
     }
 
     @Override
@@ -52,6 +56,8 @@ public class UpdateDeclarationIndependanceService
                 declarationRepository.findById(id)
                         .orElseThrow(() -> new ResourceNotFoundException(
                                 "Déclaration d'indépendance introuvable : " + id));
+
+        missionAccess.checkAccess(declaration.getMission().getId());
 
         Mission mission =
                 missionRepository.findById(request.getMissionId())

@@ -18,4 +18,6 @@ public interface MissionPersonneRepository {
     List<MissionPersonne> findByMissionId(Long missionId);
 
     void deleteByMissionId(Long missionId);
+
+    List<Long> findMissionIdsByPersonneId(Long personneId);
 }

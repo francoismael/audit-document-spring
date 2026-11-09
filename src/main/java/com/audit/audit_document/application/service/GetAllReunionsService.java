@@ -22,13 +22,17 @@ public class GetAllReunionsService
     private final ReunionRepository reunionRepository;
     private final ReunionPersonneRepository reunionPersonneRepository;
 
+    private final MissionAccess missionAccess;
+
     public GetAllReunionsService(
             ReunionRepository reunionRepository,
-            ReunionPersonneRepository reunionPersonneRepository) {
+            ReunionPersonneRepository reunionPersonneRepository,
+            MissionAccess missionAccess) {
 
         this.reunionRepository = reunionRepository;
         this.reunionPersonneRepository =
                 reunionPersonneRepository;
+        this.missionAccess = missionAccess;
     }
 
     @Override
@@ -36,7 +40,7 @@ public class GetAllReunionsService
     public List<ReunionResponse> execute() {
 
         List<Reunion> reunions =
-                reunionRepository.findAll();
+                missionAccess.keepVisible(reunionRepository.findAll(), reunion -> reunion.getMission().getId());
 
         List<ReunionResponse> responses =
                 new ArrayList<>();

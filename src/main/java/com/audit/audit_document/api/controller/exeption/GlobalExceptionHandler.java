@@ -2,6 +2,7 @@ package com.audit.audit_document.api.controller.exeption;
 
 import com.audit.audit_document.application.dto.ApiErrorResponse;
 import com.audit.audit_document.domain.exception.ConflictException;
+import com.audit.audit_document.domain.exception.ForbiddenException;
 import com.audit.audit_document.domain.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,13 @@ public class GlobalExceptionHandler {
             ConflictException exception) {
 
         return buildResponse(HttpStatus.CONFLICT, exception.getMessage());
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ApiErrorResponse> handleForbidden(
+            ForbiddenException exception) {
+
+        return buildResponse(HttpStatus.FORBIDDEN, exception.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

@@ -35,10 +35,11 @@ public class DocumentGenereController {
     @GetMapping
     public ResponseEntity<List<DocumentGenereResponse>> getAll(
             @RequestParam(required = false) Long documentTypeId,
-            @RequestParam(required = false) Long missionId) {
+            @RequestParam(required = false) Long missionId,
+            @RequestParam(required = false) String q) {
 
         return ResponseEntity.ok(
-                getAllUseCase.getAll(documentTypeId, missionId));
+                getAllUseCase.getAll(documentTypeId, missionId, q));
     }
 
     @GetMapping("/{id}")

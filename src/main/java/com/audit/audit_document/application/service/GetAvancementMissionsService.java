@@ -41,6 +41,8 @@ public class GetAvancementMissionsService
     private final PvAffirmationRepository pvAffirmationRepository;
     private final ReunionRepository reunionRepository;
 
+    private final MissionAccess missionAccess;
+
     public GetAvancementMissionsService(
             MissionRepository missionRepository,
             TdrRepository tdrRepository,
@@ -49,7 +51,8 @@ public class GetAvancementMissionsService
             ConstatRepository constatRepository,
             RapportAuditRepository rapportAuditRepository,
             PvAffirmationRepository pvAffirmationRepository,
-            ReunionRepository reunionRepository) {
+            ReunionRepository reunionRepository,
+            MissionAccess missionAccess) {
 
         this.missionRepository = missionRepository;
         this.tdrRepository = tdrRepository;
@@ -62,6 +65,7 @@ public class GetAvancementMissionsService
         this.pvAffirmationRepository =
                 pvAffirmationRepository;
         this.reunionRepository = reunionRepository;
+        this.missionAccess = missionAccess;
     }
 
     @Override
@@ -69,7 +73,7 @@ public class GetAvancementMissionsService
     public List<AvancementMissionResponse> execute() {
 
         List<Mission> missions =
-                missionRepository.findAll();
+                missionAccess.keepVisible(missionRepository.findAll(), Mission::getId);
 
         /*
          * Collect the IDs of the missions that already have

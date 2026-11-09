@@ -59,13 +59,13 @@ public class MissionController {
         return ResponseEntity.ok(mission);
     }
 
+    // GET /api/missions?q=audit&statut=EN_COURS (both optional).
     @GetMapping
-    public ResponseEntity<List<MissionResponse>> getAll() {
+    public ResponseEntity<List<MissionResponse>> getAll(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String statut) {
 
-    List<MissionResponse> missions =
-            getAllMissionUseCase.execute();
-
-    return ResponseEntity.ok(missions);
+        return ResponseEntity.ok(getAllMissionUseCase.execute(q, statut));
     }
 
     @PutMapping("/{id}")

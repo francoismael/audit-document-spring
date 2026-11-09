@@ -21,10 +21,14 @@ public class GetTdrByIdService
 
     private final TdrRepository tdrRepository;
 
+    private final MissionAccess missionAccess;
+
     public GetTdrByIdService(
-            TdrRepository tdrRepository) {
+            TdrRepository tdrRepository,
+            MissionAccess missionAccess) {
 
         this.tdrRepository = tdrRepository;
+        this.missionAccess = missionAccess;
     }
 
     @Override
@@ -36,6 +40,8 @@ public class GetTdrByIdService
                         .orElseThrow(() ->
                                 new ResourceNotFoundException(
                                         "TDR introuvable : " + id));
+
+        missionAccess.checkAccess(tdr.getMission().getId());
 
         return buildResponse(tdr);
     }

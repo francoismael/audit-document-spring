@@ -32,16 +32,20 @@ public class CreateProgrammeTravailService
     private final MissionRepository missionRepository;
     private final ObjectifRepository objectifRepository;
 
+    private final MissionAccess missionAccess;
+
     public CreateProgrammeTravailService(
             ProgrammeTravailRepository programmeRepository,
             LigneProgrammeRepository ligneRepository,
             MissionRepository missionRepository,
-            ObjectifRepository objectifRepository) {
+            ObjectifRepository objectifRepository,
+            MissionAccess missionAccess) {
 
         this.programmeRepository = programmeRepository;
         this.ligneRepository = ligneRepository;
         this.missionRepository = missionRepository;
         this.objectifRepository = objectifRepository;
+        this.missionAccess = missionAccess;
     }
 
     @Override
@@ -51,6 +55,8 @@ public class CreateProgrammeTravailService
         Mission mission = missionRepository.findById(request.getMissionId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Mission introuvable"));
+
+        missionAccess.checkAccess(mission.getId());
 
         if (programmeRepository.existsByMissionId(mission.getId())) {
             throw new ConflictException(

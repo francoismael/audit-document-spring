@@ -33,8 +33,8 @@ public class UtilisateurRepositoryAdapter implements UtilisateurRepository {
     }
 
     @Override
-    public Optional<Utilisateur> findByEmail(String email) {
-        return utilisateurJpa.findByEmail(email);
+    public Optional<Utilisateur> findByPersonneId(Long personneId) {
+        return utilisateurJpa.findByPersonneId(personneId);
     }
 
     @Override

@@ -26,16 +26,20 @@ public class CreateMissionService implements CreateMissionUseCase {
     private final PersonneRepository personneRepository;
     private final StructureRepository structureRepository;
 
+    private final MissionAccess missionAccess;
+
     public CreateMissionService(
             MissionRepository missionRepository,
             MissionPersonneRepository missionPersonneRepository,
             PersonneRepository personneRepository,
-            StructureRepository structureRepository) {
+            StructureRepository structureRepository,
+            MissionAccess missionAccess) {
 
         this.missionRepository = missionRepository;
         this.missionPersonneRepository = missionPersonneRepository;
         this.personneRepository = personneRepository;
         this.structureRepository = structureRepository;
+        this.missionAccess = missionAccess;
     }
 
     @Override
@@ -72,29 +76,26 @@ public class CreateMissionService implements CreateMissionUseCase {
 
         Mission missionSaved = missionRepository.save(mission);
 
-        // Add people assigned to the mission
-        if (request.getPersonnes() != null) {
+        // Add people assigned to the mission, with the user who creates it
+        for (MissionPersonneRequest personneRequest
+                : missionAccess.addCurrentUserToTeam(request.getPersonnes())) {
 
-            for (MissionPersonneRequest personneRequest
-                    : request.getPersonnes()) {
+            Personne personne = personneRepository
+                    .findById(personneRequest.getPersonneId())
+                    .orElseThrow(() ->
+                            new ResourceNotFoundException(
+                                    "Personne introuvable : "
+                                    + personneRequest.getPersonneId()));
 
-                Personne personne = personneRepository
-                        .findById(personneRequest.getPersonneId())
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "Personne introuvable : "
-                                        + personneRequest.getPersonneId()));
+            MissionPersonne missionPersonne =
+                    new MissionPersonne();
 
-                MissionPersonne missionPersonne =
-                        new MissionPersonne();
+            missionPersonne.setMission(missionSaved);
+            missionPersonne.setPersonne(personne);
+            missionPersonne.setRoles(
+                    MissionRole.fromValue(personneRequest.getRoles()).name());
 
-                missionPersonne.setMission(missionSaved);
-                missionPersonne.setPersonne(personne);
-                missionPersonne.setRoles(
-                        MissionRole.fromValue(personneRequest.getRoles()).name());
-
-                missionPersonneRepository.save(missionPersonne);
-            }
+            missionPersonneRepository.save(missionPersonne);
         }
 
         return missionSaved;

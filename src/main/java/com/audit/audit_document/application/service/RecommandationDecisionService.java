@@ -23,15 +23,19 @@ public class RecommandationDecisionService
     private final RecommandationRepository recommandationRepository;
     private final ReponseRepository reponseRepository;
 
+    private final MissionAccess missionAccess;
+
     public RecommandationDecisionService(
             RecommandationRepository recommandationRepository,
-            ReponseRepository reponseRepository) {
+            ReponseRepository reponseRepository,
+            MissionAccess missionAccess) {
 
         this.recommandationRepository =
                 recommandationRepository;
 
         this.reponseRepository =
                 reponseRepository;
+        this.missionAccess = missionAccess;
     }
 
 
@@ -63,6 +67,8 @@ public class RecommandationDecisionService
                                                 + recommandationId
                                 )
                         );
+
+        missionAccess.checkAccess(ConstatService.missionIdOf(recommandation.getConstat()));
 
 
         if (!Boolean.TRUE.equals(

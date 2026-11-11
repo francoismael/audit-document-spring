@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -46,7 +47,7 @@ public class ValidateDocumentTemplateVariablesService
 
     private static final Pattern VARIABLE_PATTERN =
             Pattern.compile(
-                    "\\{\\{\\s*([A-Za-z0-9_]+)\\s*\\}\\}"
+                    "\\{\\{\\s*([\\p{L}\\p{M}0-9_]+)\\s*\\}\\}"
             );
 
     public ValidateDocumentTemplateVariablesService(
@@ -317,8 +318,9 @@ public class ValidateDocumentTemplateVariablesService
 
         while (matcher.find()) {
 
+            // Word may store an accent as a separate character: compare in the composed form.
             String variable =
-                    matcher.group(1);
+                    Normalizer.normalize(matcher.group(1), Normalizer.Form.NFC);
 
             variables.add(variable);
         }

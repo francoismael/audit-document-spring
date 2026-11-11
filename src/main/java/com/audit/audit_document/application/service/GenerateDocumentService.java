@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -52,7 +53,7 @@ public class GenerateDocumentService
 
     private static final Pattern VARIABLE_PATTERN =
             Pattern.compile(
-                    "\\{\\{\\s*([A-Za-z0-9_]+)\\s*\\}\\}"
+                    "\\{\\{\\s*([\\p{L}\\p{M}0-9_]+)\\s*\\}\\}"
             );
 
     private static final DateTimeFormatter DISPLAY_DATE =
@@ -402,7 +403,7 @@ public class GenerateDocumentService
 
             String value =
                     replacements.getOrDefault(
-                            matcher.group(1),
+                            Normalizer.normalize(matcher.group(1), Normalizer.Form.NFC),
                             "");
 
             String newText =

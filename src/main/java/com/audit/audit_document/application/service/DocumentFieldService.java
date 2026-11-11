@@ -19,6 +19,7 @@ import com.audit.audit_document.domain.repository.DocumentTypeRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -46,10 +47,10 @@ public class DocumentFieldService
      * so that every field can be used in the template.
      */
     private static final Pattern NAME_PATTERN =
-            Pattern.compile("[A-Za-z0-9_]+");
+            Pattern.compile("[\\p{L}\\p{M}0-9_]+");
 
     private static final String INVALID_NAME_MESSAGE =
-            "Le nom technique du champ ne doit contenir que des lettres, "
+            "Le nom technique du champ ne doit contenir que des lettres (accents autorisés), "
                     + "des chiffres et des soulignés (_), sans espace";
 
     public static final Set<String> TYPES_AUTORISES =
@@ -192,7 +193,7 @@ public class DocumentFieldService
             validateItemRequest(fieldRequest);
 
             String nom =
-                    fieldRequest.getNom().trim();
+                    normalizeName(fieldRequest.getNom());
 
             ensureNameIsFree(
                     request.getDocumentTypeId(),
@@ -212,9 +213,7 @@ public class DocumentFieldService
             documentField.setDocumentType(
                     documentType);
 
-            documentField.setNom(
-                    fieldRequest.getNom()
-                            .trim());
+            documentField.setNom(nom);
 
             documentField.setLibelle(
                     fieldRequest.getLibelle()
@@ -495,6 +494,17 @@ public class DocumentFieldService
     }
 
 
+    // An accented letter can be one character or a letter followed by an accent:
+    // the name is kept in the composed form (NFC), like the variables read in the template.
+    private static String normalizeName(
+            String nom) {
+
+        return Normalizer.normalize(
+                nom.trim(),
+                Normalizer.Form.NFC);
+    }
+
+
     private void ensureNameIsFree(
             Long documentTypeId,
             String nom,
@@ -546,7 +556,7 @@ public class DocumentFieldService
                     "Le libellé du champ est obligatoire");
         }
 
-        if (!NAME_PATTERN.matcher(request.getNom().trim()).matches()) {
+        if (!NAME_PATTERN.matcher(normalizeName(request.getNom())).matches()) {
 
             throw new IllegalArgumentException(
                     INVALID_NAME_MESSAGE);
@@ -573,7 +583,7 @@ public class DocumentFieldService
         }
 
         request.setNom(
-                request.getNom().trim());
+                normalizeName(request.getNom()));
 
         request.setLibelle(
                 request.getLibelle().trim());
@@ -605,7 +615,7 @@ public class DocumentFieldService
                     "Le libellé du champ est obligatoire");
         }
 
-        if (!NAME_PATTERN.matcher(request.getNom().trim()).matches()) {
+        if (!NAME_PATTERN.matcher(normalizeName(request.getNom())).matches()) {
 
             throw new IllegalArgumentException(
                     INVALID_NAME_MESSAGE);
